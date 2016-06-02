@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/aop 
+		http://www.springframework.org/schema/aop/spring-aop-3.0.xsd 
+		http://www.springframework.org/schema/beans 
+		http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+		http://www.springframework.org/schema/context 
+		http://www.springframework.org/schema/context/spring-context-3.0.xsd 
+		http://www.springframework.org/schema/mvc 
+		http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd 
+		http://www.springframework.org/schema/tx 
+		http://www.springframework.org/schema/tx/spring-tx-3.0.xsd">
+		
+	<!-- @author peter king 2015-10-21 -->
+	
+	<!-- 启动spring mvc自动配置 -->	
+	<mvc:annotation-driven /> 
+	<!-- 配置往返消息自动格式转化，此处自动转化为json --> 
+ 	<bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">
+		<property name="messageConverters">
+			<list>
+				<bean class="org.springframework.http.converter.StringHttpMessageConverter">
+					<property name="supportedMediaTypes">
+						<list>
+							<value>
+								text/html;charset=UTF-8
+							</value>
+						</list>
+					</property>
+				</bean>
+				<!-- 启动JSON格式的配置 -->
+				<bean id="jacksonMessageConverter" class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter">
+					<!-- 解决 HttpMediaTypeNotAcceptableException: Could not find acceptable representation -->
+					<property name="supportedMediaTypes">
+						<list>
+							<value>application/json;charset=UTF-8</value>
+						</list>
+					</property>
+				</bean>
+			</list>
+		</property>
+	</bean>
+	<!-- 配置接收文件的相关参数 -->
+	<bean id="multipartResolver"
+        class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <property name="defaultEncoding" value="UTF-8" />
+        <!-- 指定所上传文件的总大小不能超过2000KB。注意maxUploadSize属性的限制不是针对单个文件，而是所有文件的容量之和 -->
+        <property name="maxUploadSize" value="102400000" />
+        <!-- 但是经实验，上传文件大小若小于此参数，则不会生成临时文件,此处设置为1字节，即必然生成文件 -->
+        <property name="maxInMemorySize" value="1" />  
+
+    </bean>
+
+	
+	<!-- 用于连接与model数据库连接的工具类 -->
+	<bean id="modelDAO" class="com.troy.dao.ModelDAO" scope="singleton" />
+	<!-- 使用keystone的相关api的配置 -->	
+	<bean id="keystoneAPI" class="com.troy.util.KeystoneAPI" scope="singleton">
+		<!-- keystone安装地址 -->
+		 
+		 <!-- keystone的管理员token -->
+		 		
+		 <!-- 要使用的domain的Id，每个keystone会固定使用一个domain，将domain id写在此处 -->
+		  
+		  <property name="domainId" value="default"/>
+		  <constructor-arg name="url" value="192.168.121.95:5000/v3/" />
+		  <constructor-arg name="X_TOKEN" value="416cda94d5fc892e1c8e" />
+		  <property name="modeldao" ref="modelDAO"/>
+		  
+		  <!-- 
+		  <constructor-arg name="url" value="10.0.118.213:5000/v3/" />
+		  <constructor-arg name="X_TOKEN" value="59c552863f968e04be26" />  
+		  <property name="domainId" value="a144590a01cd41c78bed4e1118e567c6"/> 
+		  <property name="modeldao" ref="modelDAO"/>
+		    -->
+	</bean>
+	
+	<!-- 使用hadoop的相关api的配置 -->
+	<bean id="hadoopAPI" class="com.troy.util.HadoopAPI" scope="singleton">
+		<!-- hadoop地址 -->
+		<constructor-arg name="HadoopHostUrl" value="192.168.121.35:50070/webhdfs/v1" /> 
+		<!-- <constructor-arg name="HadoopHostUrl" value="10.0.118.201:50070/webhdfs/v1" /> -->
+		<!-- hadoop的默认用户名 -->
+		<constructor-arg name="hdfsUserName" value="cdhfive"/>
+	</bean>
+	
+	
+	
+	
+	
+	
+	<!-- 多租户管理类 -->
+	<bean id="userSessionManager" class="com.troy.sessionManager.UserSessionManager" scope="singleton">
+		<property name="ka" ref="keystoneAPI" />
+	</bean>
+	<!-- 作业调度类 -->
+	<bean id="jobStatusManager" class="com.troy.sessionManager.JobStatusManager" scope="singleton">
+	</bean>
+	<!-- 模型管理类 -->
+	<bean id="modelManager" class="com.troy.sessionManager.ModelManager" scope="singleton">
+		<property name="jobStatusManager" ref="jobStatusManager"/>
+		<property name="userSessionManager" ref="userSessionManager" />
+		<property name="modelDAO" ref="modelDAO"/>
+		<property name="hadoopAPI" ref="hadoopAPI"/>
+		<property name="ka" ref="keystoneAPI" />
+		<property name="oozie" value="10.0.12.160:8080/AISchedule"/>
+		<!-- <property name="oozie" value="10.0.118.209:8080/AISchedule"/> -->
+	</bean>
+	
+	
+	
+	
+	<bean class="com.troy.webservice.UserService" scope="singleton">
+		<property name="userSessionManager" ref="userSessionManager"/>
+	</bean>
+	
+	<bean class="com.troy.webservice.AuthorityService" scope="singleton">
+		<property name="userSessionManager" ref="userSessionManager"/>
+	</bean>
+	
+	<bean class="com.troy.webservice.ModelService" scope="singleton">
+		<property name="modelManager" ref="modelManager"/>
+	</bean>
+	
+	<bean class="com.troy.webservice.JobStatusService" scope="singleton">
+		<property name="jobStatusManager" ref="jobStatusManager"/>
+		<property name="userSessionManager" ref="userSessionManager"/>
+		<property name="modelDAO" ref="modelDAO"/>
+		<property name="oozie" value="10.0.12.160:8080/AISchedule"/>
+		<!-- <property name="oozie" value="10.0.118.209:8080/AISchedule"/> -->
+	</bean>
+	
+	
+</beans>

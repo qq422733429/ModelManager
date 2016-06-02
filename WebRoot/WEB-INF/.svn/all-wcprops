@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svn/TroyBI/!svn/ver/576/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF
+END
+log4j.properties
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/svn/TroyBI/!svn/ver/630/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/log4j.properties
+END
+ModelServer-servlet.xml
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/svn/TroyBI/!svn/ver/630/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/ModelServer-servlet.xml
+END
+web.xml
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/svn/TroyBI/!svn/ver/597/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/web.xml
+END

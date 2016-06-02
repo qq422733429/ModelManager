@@ -1,0 +1,341 @@
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/lib
+END
+json-lib-2.4-jdk15.jar
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/lib/json-lib-2.4-jdk15.jar
+END
+commons-io-1.4.jar
+K 25
+svn:wc:ra_dav:version-url
+V 104
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/lib/commons-io-1.4.jar
+END
+jackson-mapper-asl-1.9.12.jar
+K 25
+svn:wc:ra_dav:version-url
+V 115
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/lib/jackson-mapper-asl-1.9.12.jar
+END
+org.springframework.aspects-3.1.1.RELEASE.jar
+K 25
+svn:wc:ra_dav:version-url
+V 131
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/lib/org.springframework.aspects-3.1.1.RELEASE.jar
+END
+httpcore-4.4.3.jar
+K 25
+svn:wc:ra_dav:version-url
+V 104
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/lib/httpcore-4.4.3.jar
+END
+mysql-connector-java-5.1.6-bin.jar
+K 25
+svn:wc:ra_dav:version-url
+V 120
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/lib/mysql-connector-java-5.1.6-bin.jar
+END
+org.springframework.transaction-3.1.1.RELEASE.jar
+K 25
+svn:wc:ra_dav:version-url
+V 135
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/lib/org.springframework.transaction-3.1.1.RELEASE.jar
+END
+commons-collections-3.2.1.jar
+K 25
+svn:wc:ra_dav:version-url
+V 115
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/lib/commons-collections-3.2.1.jar
+END
+jboss-logging-annotations-1.2.0.Beta1.jar
+K 25
+svn:wc:ra_dav:version-url
+V 127
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/lib/jboss-logging-annotations-1.2.0.Beta1.jar
+END
+commons-codec-1.6.jar
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/lib/commons-codec-1.6.jar
+END
+org.springframework.web.portlet-3.1.1.RELEASE.jar
+K 25
+svn:wc:ra_dav:version-url
+V 135
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/lib/org.springframework.web.portlet-3.1.1.RELEASE.jar
+END
+jboss-transaction-api_1.2_spec-1.0.0.Final.jar
+K 25
+svn:wc:ra_dav:version-url
+V 132
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/lib/jboss-transaction-api_1.2_spec-1.0.0.Final.jar
+END
+aopalliance-1.0.jar
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/lib/aopalliance-1.0.jar
+END
+commons-lang-2.5.jar
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/lib/commons-lang-2.5.jar
+END
+commons-lang-2.6.jar
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/lib/commons-lang-2.6.jar
+END
+ezmorph-1.0.6.jar
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/lib/ezmorph-1.0.6.jar
+END
+org.springframework.oxm-3.1.1.RELEASE.jar
+K 25
+svn:wc:ra_dav:version-url
+V 127
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/lib/org.springframework.oxm-3.1.1.RELEASE.jar
+END
+commons-cli-1.2.jar
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/lib/commons-cli-1.2.jar
+END
+antlr-2.7.6.jar
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/lib/antlr-2.7.6.jar
+END
+log4j-1.2.91.jar
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/lib/log4j-1.2.91.jar
+END
+commons-logging-1.1.1.jar
+K 25
+svn:wc:ra_dav:version-url
+V 111
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/lib/commons-logging-1.1.1.jar
+END
+dom4j-1.6.1.jar
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/lib/dom4j-1.6.1.jar
+END
+org.springframework.jdbc-3.1.1.RELEASE.jar
+K 25
+svn:wc:ra_dav:version-url
+V 128
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/lib/org.springframework.jdbc-3.1.1.RELEASE.jar
+END
+org.springframework.orm-3.1.1.RELEASE.jar
+K 25
+svn:wc:ra_dav:version-url
+V 127
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/lib/org.springframework.orm-3.1.1.RELEASE.jar
+END
+org.springframework.web.servlet-3.1.1.RELEASE.jar
+K 25
+svn:wc:ra_dav:version-url
+V 135
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/lib/org.springframework.web.servlet-3.1.1.RELEASE.jar
+END
+org.springframework.context-3.1.1.RELEASE.jar
+K 25
+svn:wc:ra_dav:version-url
+V 131
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/lib/org.springframework.context-3.1.1.RELEASE.jar
+END
+httpmime-4.5.1.jar
+K 25
+svn:wc:ra_dav:version-url
+V 104
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/lib/httpmime-4.5.1.jar
+END
+commons-fileupload-1.2.2.jar
+K 25
+svn:wc:ra_dav:version-url
+V 114
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/lib/commons-fileupload-1.2.2.jar
+END
+commons-vfs-20100924-pentaho.jar
+K 25
+svn:wc:ra_dav:version-url
+V 118
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/lib/commons-vfs-20100924-pentaho.jar
+END
+mail.jar
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/lib/mail.jar
+END
+aspectjweaver-1.6.8.jar
+K 25
+svn:wc:ra_dav:version-url
+V 109
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/lib/aspectjweaver-1.6.8.jar
+END
+httpclient-cache-4.5.1.jar
+K 25
+svn:wc:ra_dav:version-url
+V 112
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/lib/httpclient-cache-4.5.1.jar
+END
+org.springframework.asm-3.1.1.RELEASE.jar
+K 25
+svn:wc:ra_dav:version-url
+V 127
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/lib/org.springframework.asm-3.1.1.RELEASE.jar
+END
+jackson-core-asl-1.9.12.jar
+K 25
+svn:wc:ra_dav:version-url
+V 113
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/lib/jackson-core-asl-1.9.12.jar
+END
+com.springsource.net.sf.cglib-2.2.0.jar
+K 25
+svn:wc:ra_dav:version-url
+V 125
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/lib/com.springsource.net.sf.cglib-2.2.0.jar
+END
+commons-configuration-1.6.jar
+K 25
+svn:wc:ra_dav:version-url
+V 115
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/lib/commons-configuration-1.6.jar
+END
+standard.jar
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/lib/standard.jar
+END
+htrace-core-3.0.4.jar
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/lib/htrace-core-3.0.4.jar
+END
+jta-1.1.jar
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/lib/jta-1.1.jar
+END
+fluent-hc-4.2.5.jar
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/lib/fluent-hc-4.2.5.jar
+END
+org.springframework.aop-3.1.1.RELEASE.jar
+K 25
+svn:wc:ra_dav:version-url
+V 127
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/lib/org.springframework.aop-3.1.1.RELEASE.jar
+END
+org.springframework.beans-3.1.1.RELEASE.jar
+K 25
+svn:wc:ra_dav:version-url
+V 129
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/lib/org.springframework.beans-3.1.1.RELEASE.jar
+END
+commons-httpclient-3.1.jar
+K 25
+svn:wc:ra_dav:version-url
+V 112
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/lib/commons-httpclient-3.1.jar
+END
+httpclient-4.5.1.jar
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/lib/httpclient-4.5.1.jar
+END
+org.springframework.expression-3.1.1.RELEASE.jar
+K 25
+svn:wc:ra_dav:version-url
+V 134
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/lib/org.springframework.expression-3.1.1.RELEASE.jar
+END
+javassist-3.12.0.GA.jar
+K 25
+svn:wc:ra_dav:version-url
+V 109
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/lib/javassist-3.12.0.GA.jar
+END
+ejb3-persistence.jar
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/lib/ejb3-persistence.jar
+END
+aspectjrt-1.6.8.jar
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/lib/aspectjrt-1.6.8.jar
+END
+org.springframework.core-3.1.1.RELEASE.jar
+K 25
+svn:wc:ra_dav:version-url
+V 128
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/lib/org.springframework.core-3.1.1.RELEASE.jar
+END
+commons-beanutils-1.7.0.jar
+K 25
+svn:wc:ra_dav:version-url
+V 113
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/lib/commons-beanutils-1.7.0.jar
+END
+commons-beanutils-1.8.0.jar
+K 25
+svn:wc:ra_dav:version-url
+V 113
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/lib/commons-beanutils-1.8.0.jar
+END
+org.springframework.jms-3.1.1.RELEASE.jar
+K 25
+svn:wc:ra_dav:version-url
+V 127
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/lib/org.springframework.jms-3.1.1.RELEASE.jar
+END
+org.springframework.context.support-3.1.1.RELEASE.jar
+K 25
+svn:wc:ra_dav:version-url
+V 139
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/lib/org.springframework.context.support-3.1.1.RELEASE.jar
+END
+mina-core-2.0.9.jar
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/lib/mina-core-2.0.9.jar
+END
+jboss-logging-3.1.3.GA.jar
+K 25
+svn:wc:ra_dav:version-url
+V 112
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/lib/jboss-logging-3.1.3.GA.jar
+END
+org.springframework.web-3.1.1.RELEASE.jar
+K 25
+svn:wc:ra_dav:version-url
+V 127
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/WebRoot/WEB-INF/lib/org.springframework.web-3.1.1.RELEASE.jar
+END

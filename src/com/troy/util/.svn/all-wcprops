@@ -1,0 +1,53 @@
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svn/TroyBI/!svn/ver/574/trunk/AIModelManager/ModelServer20160429/src/com/troy/util
+END
+ModelExecuteAPI.java
+K 25
+svn:wc:ra_dav:version-url
+V 104
+/svn/TroyBI/!svn/ver/574/trunk/AIModelManager/ModelServer20160429/src/com/troy/util/ModelExecuteAPI.java
+END
+KeystoneUtil.java
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/src/com/troy/util/KeystoneUtil.java
+END
+SSLClient.java
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/svn/TroyBI/!svn/ver/574/trunk/AIModelManager/ModelServer20160429/src/com/troy/util/SSLClient.java
+END
+SessionManager.java
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/svn/TroyBI/!svn/ver/597/trunk/AIModelManager/ModelServer20160429/src/com/troy/util/SessionManager.java
+END
+HibernateSessionFactory.java
+K 25
+svn:wc:ra_dav:version-url
+V 112
+/svn/TroyBI/!svn/ver/527/trunk/AIModelManager/ModelServer20160429/src/com/troy/util/HibernateSessionFactory.java
+END
+HadoopAPI.java
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/svn/TroyBI/!svn/ver/597/trunk/AIModelManager/ModelServer20160429/src/com/troy/util/HadoopAPI.java
+END
+HttpClientUtil.java
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/svn/TroyBI/!svn/ver/634/trunk/AIModelManager/ModelServer20160429/src/com/troy/util/HttpClientUtil.java
+END
+KeystoneAPI.java
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/svn/TroyBI/!svn/ver/634/trunk/AIModelManager/ModelServer20160429/src/com/troy/util/KeystoneAPI.java
+END
