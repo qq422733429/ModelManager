@@ -15,6 +15,9 @@ public class ApplyTable implements java.io.Serializable {
 	private Integer status;
 	private String message;
 	private String role;
+	
+	
+	
 
 	// Constructors
 
