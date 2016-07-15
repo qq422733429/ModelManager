@@ -10,6 +10,7 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.httpclient.auth.AuthenticationException;
 import org.apache.http.HttpException;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
@@ -27,7 +28,6 @@ import com.troy.entity.Model;
 import com.troy.entity.UserSession;
 import com.troy.sessionManager.JobStatusManager;
 import com.troy.sessionManager.UserSessionManager;
-import com.troy.util.ModelExecuteAPI;
 
 /**
  * 该类包涵了所有调度相关的操作，包括开始调度等
@@ -123,7 +123,7 @@ public class JobStatusService {
 				if(executeStatusDAO.save(us)){
 					response.getWriter().write("{\"status\":\"success\"}");
 				}else{
-					response.sendError(response.SC_INTERNAL_SERVER_ERROR, "Internal error");
+					throw new RuntimeException("服务器内部错误");
 				}
 			
 		} catch (IOException e) {
@@ -133,7 +133,8 @@ public class JobStatusService {
 			}
 			logger.error(e.getMessage()+"\n"+stringBuffer.toString());
 			try {
-				response.sendError(response.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+				response.setStatus(400);
+				response.getWriter().write(e.getMessage());	
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
@@ -167,7 +168,7 @@ public class JobStatusService {
 				logger.info("翻译项目"+model.getModelName()+"被杀死");
 				response.getWriter().write("{\"status\":\"success\"}");
 			}else{
-				response.sendError(response.SC_INTERNAL_SERVER_ERROR, "Internal error");
+				throw new RuntimeException("服务器内部错误");
 			}
 		} catch (IOException e) {
 			StringBuffer stringBuffer = new StringBuffer();
@@ -176,7 +177,8 @@ public class JobStatusService {
 			}
 			logger.error(e.getMessage()+"\n"+stringBuffer.toString());
 			try {
-				response.sendError(response.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+				response.setStatus(400);
+				response.getWriter().write(e.getMessage());	
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
@@ -186,7 +188,7 @@ public class JobStatusService {
 	}
 	
 	/**
-	 * 该接口提供用户定时和周期调度自己的模型开始执行，模型必须解释成功，即status为3，并会同时返回jobid，此处不再对jobid进行管理，返回给用户后丢弃
+	 * 该接口提供用户定时自己的模型开始执行，模型必须解释成功，即status为3，并会同时返回jobid，此处不再对jobid进行管理，返回给用户后丢弃
 	 * @param response
 	 * @param token
 	 * @param modelId
@@ -212,17 +214,16 @@ public class JobStatusService {
 						response.getWriter().write("{\"status\":\"success\",\"jobID\":\""+temp+"\"}");
 					}else{
 						logger.info("用户"+us.getKue().getUserName()+"调度定时作业"+model.getModelName()+"失败：模型未编译成功");
-						response.sendError(response.SC_BAD_REQUEST, "the model is not ready!");
-						throw new IOException();
+						throw new RuntimeException("模型正在编译，请稍后调度!");
 					}
 					
 				}else{
 					logger.info("用户"+us.getKue().getUserName()+"调度定时作业失败：无权限调度模型");
-					response.sendError(response.SC_FORBIDDEN, "you can not use this model!");
+					throw new AuthenticationException("用户权限不足!");
 				}
 			}else{
 				logger.info("用户调度定时作业失败：未登录成功");
-				response.sendError(response.SC_NOT_FOUND, "user is offline");
+				throw new AuthenticationException("用户未登录或者token已失效");
 			}
 		} catch ( IOException | KeyManagementException | NoSuchAlgorithmException  e) {
 			StringBuffer stringBuffer = new StringBuffer();
@@ -231,7 +232,8 @@ public class JobStatusService {
 			}
 			logger.error(e.getMessage()+"\n"+stringBuffer.toString());
 				try {
-					response.sendError(response.SC_BAD_REQUEST, e.getMessage());
+					response.setStatus(400);
+					response.getWriter().write(e.getMessage());	
 				} catch (IOException e1) {
 					e1.printStackTrace();
 				}
@@ -241,7 +243,12 @@ public class JobStatusService {
 	}
 	
 	
-	
+	/**
+	 * 该接口提供用户周期调度自己的模型开始执行，模型必须解释成功，即status为3，并会同时返回jobid，此处不再对jobid进行管理，返回给用户后丢弃
+	 * @param response
+	 * @param token
+	 * @param frequence
+	 */
 	@RequestMapping(value = "/frequeceJobStart/{token}",method = RequestMethod.POST)
 	public void frequeceJobStart(HttpServletResponse response,@PathVariable("token") String token,@RequestBody Frequence frequence) {
 		response.setContentType("application/json;charset=utf-8");
@@ -262,17 +269,16 @@ public class JobStatusService {
 						response.getWriter().write("{\"status\":\"success\",\"jobID\":\""+temp+"\"}");
 					}else{
 						logger.info("用户"+us.getKue().getUserName()+"调度周期作业"+model.getModelName()+"失败：模型未编译成功");
-						response.sendError(response.SC_BAD_REQUEST, "the model is not ready!");
-						throw new IOException();
+						throw new RuntimeException( "模型编译出错！");
 					}
 					
 				}else{
 					logger.info("用户"+us.getKue().getUserName()+"调度周期作业失败：无权限调度模型");
-					response.sendError(response.SC_FORBIDDEN, "you can not use this model!");
+					throw new AuthenticationException( "用户权限不足!");
 				}
 			}else{
 				logger.info("用户调度周期作业失败：未登录成功");
-				response.sendError(response.SC_NOT_FOUND, "user is offline");
+				throw new AuthenticationException( "用户未登录或者token已失效");
 			}
 		} catch ( IOException | KeyManagementException | NoSuchAlgorithmException  e) {
 			StringBuffer stringBuffer = new StringBuffer();
@@ -281,7 +287,8 @@ public class JobStatusService {
 			}
 			logger.error(e.getMessage()+"\n"+stringBuffer.toString());
 				try {
-					response.sendError(response.SC_BAD_REQUEST, e.getMessage()+stringBuffer.toString());
+					response.setStatus(400);
+					response.getWriter().write(e.getMessage());	
 				} catch (IOException e1) {
 					e1.printStackTrace();
 				}
@@ -301,7 +308,7 @@ public class JobStatusService {
 	 * @param createUserId
 	 * @param modelId
 	 */
-	@RequestMapping(value = "/JobStart/{token}/{createUserId}/{modelId}",method = RequestMethod.POST)
+	@RequestMapping(value = "/JobStart/{token}/{createUserId}/{modelId}",method = RequestMethod.POST,produces="application/json")
 	public void JobStart(HttpServletResponse response,@PathVariable("token") String token,@PathVariable("createUserId") String createUserId,@PathVariable("modelId") String modelId) {
 		response.setContentType("application/json;charset=utf-8");
 		try {
@@ -321,19 +328,22 @@ public class JobStatusService {
 								model.getHdfsLocation(),modelId,model.getModelName());
 						logger.info("用户"+us.getKue().getUserName()+"调度普通作业"+model.getModelName()+"成功，jobid: "+temp);
 						response.getWriter().write("{\"status\":\"success\",\"jobID\":\""+temp+"\"}");
+					}else if(model.getStatus().equals(2)){
+						logger.info("用户"+us.getKue().getUserName()+"调度普通作业"+model.getModelName()+"失败：模型编译未完成");
+						throw new RuntimeException("模型正在编译，请稍后调度 !");
 					}else{
-						logger.info("用户"+us.getKue().getUserName()+"调度普通作业"+model.getModelName()+"失败：模型未编译成功");
-						response.sendError(response.SC_BAD_REQUEST, "the model is not ready!");
+						logger.info("用户"+us.getKue().getUserName()+"调度普通作业"+model.getModelName()+"失败：模型编译失败");
+						throw new RuntimeException("模型编译失败");
 					}
 				}else{
 					logger.info("用户"+us.getKue().getUserName()+"调度普通作业失败：无权限调度模型");
-					response.sendError(response.SC_FORBIDDEN, "you can not use this model!");
+					throw new AuthenticationException("用户权限不足!");
 				}
 			}else{
 				logger.info("用户调度普通作业失败：未登录成功");
-				response.sendError(response.SC_NOT_FOUND, "user is offline");
+				throw new AuthenticationException( "用户未登录或者token已失效");
 			}
-		} catch ( IOException | KeyManagementException | NoSuchAlgorithmException e) {
+		} catch ( Exception  e) {
 			StringBuffer stringBuffer = new StringBuffer();
 			for (StackTraceElement element : e.getStackTrace()) {
 				stringBuffer.append("\t"+element+"\n");
@@ -341,7 +351,8 @@ public class JobStatusService {
 			logger.error(e.getMessage()+"\n"+stringBuffer.toString());
 			
 				try {
-					response.sendError(response.SC_BAD_REQUEST, e.getMessage());
+					response.setStatus(400);
+					response.getWriter().write(e.getMessage());
 				} catch (IOException e1) {
 					e1.printStackTrace();
 				}
@@ -358,7 +369,7 @@ public class JobStatusService {
 	 */
 	@RequestMapping(value = "/killJob/{token}/{jobId}",method = RequestMethod.PUT)
 	public void killJob(HttpServletResponse response,@PathVariable("token") String token,@PathVariable("jobId") String jobId) {
-		System.out.println("kill普通作业");
+		
 		response.setContentType("application/json;charset=utf-8");
 		try {
 			
@@ -373,15 +384,14 @@ public class JobStatusService {
 						logger.info("用户"+((UserSession)userSessionManager.mapSession.get(token)).getKue().getUserName()+"kill作业"+jobId+"成功");
 						response.getWriter().write("{\"status\":\"success\"}");
 						break;
-					case 400:
-						response.sendError(response.SC_BAD_REQUEST);
-						break;
+					default:
+						throw new HttpException();
 				}
 			}else{
 				logger.info("用户"+((UserSession)userSessionManager.mapSession.get(token)).getKue().getUserName()+"kill作业"+jobId+"失败：用户未登录");
-				response.sendError(response.SC_NOT_FOUND, "user is offline");
+				throw new AuthenticationException("用户未登录或者token已失效");
 			}
-		} catch ( IOException | KeyManagementException | NoSuchAlgorithmException e) {
+		} catch ( IOException | KeyManagementException | NoSuchAlgorithmException | HttpException e) {
 			StringBuffer stringBuffer = new StringBuffer();
 			for (StackTraceElement element : e.getStackTrace()) {
 				stringBuffer.append("\t"+element+"\n");
@@ -389,7 +399,8 @@ public class JobStatusService {
 			logger.error(e.getMessage()+"\n"+stringBuffer.toString());
 			
 				try {
-					response.sendError(response.SC_BAD_REQUEST, e.getMessage());
+					response.setStatus(400);
+					response.getWriter().write(e.getMessage());
 				} catch (IOException e1) {
 					e1.printStackTrace();
 				}
@@ -410,7 +421,7 @@ public class JobStatusService {
 	@Deprecated
 	@RequestMapping(value = "/getMyJobList/{token}",method = RequestMethod.GET)
 	public @ResponseBody List<Execute> getMyJobList(HttpServletResponse response,@PathVariable("token") String token) {
-		System.out.println("获取本人作业链表");
+		
 		response.setContentType("application/json;charset=utf-8");
 		
 			try {
@@ -423,7 +434,7 @@ public class JobStatusService {
 					List<Execute> list = executeStatusDAO.findByCreateUserId(us.getKue().getUserID());
 					return list;
 				}else{
-					return null;
+					throw new RuntimeException();
 				}
 			} catch (Exception e) {
 				StringBuffer stringBuffer = new StringBuffer();
@@ -434,9 +445,15 @@ public class JobStatusService {
 				return null;
 			}
 	}
+	/**
+	 * 暂停作业
+	 * @param response
+	 * @param token
+	 * @param jobId
+	 */
 	@RequestMapping(value = "/suspendJob/{token}/{jobId}",method = RequestMethod.PUT)
 	public void suspendJob(HttpServletResponse response,@PathVariable("token") String token,@PathVariable("jobId") String jobId) {
-		System.out.println("suspend普通作业");
+		
 		response.setContentType("application/json;charset=utf-8");
 		try {
 			
@@ -451,15 +468,14 @@ public class JobStatusService {
 						logger.info("用户"+((UserSession)userSessionManager.mapSession.get(token)).getKue().getUserName()+"suspend作业"+jobId+"成功");
 						response.getWriter().write("{\"status\":\"success\"}");
 						break;
-					case 400:
-						response.sendError(response.SC_BAD_REQUEST);
-						break;
+					default:
+						throw new HttpException();
 				}
 			}else{
 				logger.info("用户"+((UserSession)userSessionManager.mapSession.get(token)).getKue().getUserName()+"suspend作业"+jobId+"失败：用户未登录");
-				response.sendError(response.SC_NOT_FOUND, "user is offline");
+				throw new AuthenticationException( "用户未登录或者token已失效");
 			}
-		} catch ( IOException | KeyManagementException | NoSuchAlgorithmException e) {
+		} catch ( IOException | KeyManagementException | NoSuchAlgorithmException | HttpException e) {
 			StringBuffer stringBuffer = new StringBuffer();
 			for (StackTraceElement element : e.getStackTrace()) {
 				stringBuffer.append("\t"+element+"\n");
@@ -467,7 +483,9 @@ public class JobStatusService {
 			logger.error(e.getMessage()+"\n"+stringBuffer.toString());
 			
 				try {
-					response.sendError(response.SC_BAD_REQUEST, e.getMessage());
+					response.setStatus(400);
+					response.getWriter().write(e.getMessage());				
+					
 				} catch (IOException e1) {
 					e1.printStackTrace();
 				}
@@ -477,10 +495,15 @@ public class JobStatusService {
 		
 	}
 	
-	
+	/**
+	 * 恢复作业继续执行
+	 * @param response
+	 * @param token
+	 * @param jobId
+	 */
 	@RequestMapping(value = "/resumeJob/{token}/{jobId}",method = RequestMethod.PUT)
 	public void resumeJob(HttpServletResponse response,@PathVariable("token") String token,@PathVariable("jobId") String jobId) {
-		System.out.println("恢复普通作业");
+		
 		response.setContentType("application/json;charset=utf-8");
 		try {
 			
@@ -496,14 +519,13 @@ public class JobStatusService {
 						response.getWriter().write("{\"status\":\"success\"}");
 						break;
 					case 400:
-						response.sendError(response.SC_BAD_REQUEST);
-						break;
+						throw new HttpException("");
 				}
 			}else{
 				logger.info("用户"+((UserSession)userSessionManager.mapSession.get(token)).getKue().getUserName()+"恢复作业"+jobId+"失败：用户未登录");
-				response.sendError(response.SC_NOT_FOUND, "user is offline");
+				throw new AuthenticationException("用户未登录或者token已失效");
 			}
-		} catch ( IOException | KeyManagementException | NoSuchAlgorithmException e) {
+		} catch ( IOException | KeyManagementException | NoSuchAlgorithmException | HttpException e) {
 			StringBuffer stringBuffer = new StringBuffer();
 			for (StackTraceElement element : e.getStackTrace()) {
 				stringBuffer.append("\t"+element+"\n");
@@ -511,7 +533,8 @@ public class JobStatusService {
 			logger.error(e.getMessage()+"\n"+stringBuffer.toString());
 			
 				try {
-					response.sendError(response.SC_BAD_REQUEST, e.getMessage());
+					response.setStatus(400);
+					response.getWriter().write(e.getMessage());	
 				} catch (IOException e1) {
 					e1.printStackTrace();
 				}
@@ -520,7 +543,7 @@ public class JobStatusService {
 		
 		
 	}
-	
+	 
 	
 	
 

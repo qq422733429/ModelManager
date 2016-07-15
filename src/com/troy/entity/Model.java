@@ -3,7 +3,8 @@ package com.troy.entity;
 import java.util.Date;
 
 /**
- * Model entity. @author MyEclipse Persistence Tools
+ * Model entity. 
+ * @author Peter King
  */
 
 public class Model implements java.io.Serializable {

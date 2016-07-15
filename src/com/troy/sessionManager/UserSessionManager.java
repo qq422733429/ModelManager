@@ -23,6 +23,7 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
+import org.apache.commons.httpclient.auth.AuthenticationException;
 import org.apache.commons.lang.math.RandomUtils;
 import org.apache.http.HttpException;
 import org.apache.http.client.ClientProtocolException;
@@ -107,7 +108,7 @@ public class UserSessionManager  {
 	 * @throws IOException
 	 * @throws HttpException
 	 */
-	public String UserLogin(String uid,String token) throws KeyManagementException, NoSuchAlgorithmException, ClientProtocolException, IOException, HttpException{
+	public Boolean UserLogin(String uid,String token) throws KeyManagementException, NoSuchAlgorithmException, ClientProtocolException, IOException, HttpException{
 		
 			//验证用户的token是否正确，若不对则直接抛出异常
 			KeystoneUserEntity kue = ka.checkLogin(token);
@@ -123,12 +124,10 @@ public class UserSessionManager  {
 					us.baseList=baseList;
 					ka.getAllGrant(uid, us);
 					mapSession.put(token, us);
-					return "201";
-				}else{
-					return "201";
 				}
+				return true;
 			}else{
-				return "404";
+				throw new AuthenticationException("token与用户不匹配！");
 			}
 			
 			
@@ -164,7 +163,7 @@ public class UserSessionManager  {
 			gc.setTime(new Date());
 			gc.add(Calendar.HOUR_OF_DAY, 2);
 			((UserSession)mapSession.get(token)).setExpires_at(gc);
-			if(((UserSession)mapSession.get(token)).isIsadmin())
+			if(((UserSession)mapSession.get(token)).isIsadmin()){
 				if(ka.insertUserToGroup(UserID, groupID)){
 					logger.info("将用户"+UserID+"添加进组"+groupID+"成功");
 					return "201";
@@ -173,7 +172,7 @@ public class UserSessionManager  {
 					logger.error("将用户"+UserID+"添加进组"+groupID+"失败");
 					return "500";
 				}
-			else{
+			}else{
 				logger.error("将用户"+UserID+"添加进组"+groupID+"失败：token用户"+((UserSession)mapSession.get(token)).getKue().getUserName()+"不是admin");
 				return "401";
 			}
@@ -223,16 +222,21 @@ public class UserSessionManager  {
 			gc.setTime(new Date());
 			gc.add(Calendar.HOUR_OF_DAY, 2);
 			((UserSession)mapSession.get(token)).setExpires_at(gc);
-			if(((UserSession)mapSession.get(token)).isIsadmin())
-				if(ka.grantDomainRoleToUser(UserID, ((KeystoneRoleEntity)ka.mapRoleByName.get("admin")).getRoleID()))
+			if(((UserSession)mapSession.get(token)).isIsadmin()){
+				if(ka.grantDomainRoleToUser(UserID, ((KeystoneRoleEntity)ka.mapRoleByName.get("admin")).getRoleID())){
+					logger.info("用户"+UserID+"获得admin权限成功");
 					return "201";
-				else
-					return "500";
-			else
-				return "401";
-			
+				}else{
+					logger.error("用户"+UserID+"获得admin权限失败");
+					throw new RuntimeException("用户"+UserID+"获得admin权限失败");
+				}
+			}else{
+				logger.error("用户"+UserID+"获得admin权限失败");
+				throw new RuntimeException("用户"+UserID+"获得admin权限失败:用户权限不足");
+			}
 		}else{
-			return "404";
+			logger.error("用户"+UserID+"获得admin权限失败");
+			throw new RuntimeException("用户"+UserID+"获得admin权限失败:token未登录");
 			
 		}
 	}
@@ -276,24 +280,33 @@ public class UserSessionManager  {
 						if (ka.grantProjectRoleToUser(UserID, projectID, roleID)){
 							ApplyTable applyTable = applyTableDAO.findById(id);
 							applyTable.setStatus(1);
-							if (applyTableDAO.save(applyTable))
+							if (applyTableDAO.save(applyTable)){
+								logger.info("用户"+UserID+"获取模型"+projectID+role+"权限成功");
 								return "201";
-							else
-								return "500";
+							}else{
+								logger.error("用户"+UserID+"获取模型"+projectID+role+"权限失败");
+								throw new RuntimeException("用户"+UserID+"获取模型"+projectID+role+"权限失败");
+							}
 						}
-						else
-							return "500";
+						else{
+							logger.error("用户"+UserID+"获取模型"+projectID+role+"权限失败");
+							throw new RuntimeException("用户"+UserID+"获取模型"+projectID+role+"权限失败");
+						}
 					}else{
-							return "401";
+						logger.error("用户"+UserID+"获取模型"+projectID+role+"权限失败：没有该角色");
+						throw new RuntimeException("用户"+UserID+"获取模型"+projectID+role+"权限失败：没有该角色");
 					}
 				}else{
-					return "401";
+					logger.error("用户"+UserID+"获取模型"+projectID+role+"权限失败：用户权限不足");
+					throw new AuthenticationException("用户"+UserID+"获取模型"+projectID+role+"权限失败：用户权限不足");
 				}
-			} else
-				return "401";
-			
+			} else{
+				logger.error("用户"+UserID+"获取模型"+projectID+role+"权限失败：用户权限不足");
+				throw new AuthenticationException("用户"+UserID+"获取模型"+projectID+role+"权限失败：用户权限不足");
+			}
 		}else{
-			return "404";
+			logger.error("用户"+UserID+"获取模型"+projectID+role+"权限失败：用户未登录");
+			throw new AuthenticationException("用户"+UserID+"获取模型"+projectID+role+"权限失败：用户未登录");
 			
 		}
 	}
@@ -456,6 +469,7 @@ public class UserSessionManager  {
 			((UserSession)mapSession.get(token)).setExpires_at(gc);
 			if(((UserSession)mapSession.get(token)).isIsadmin())
 				if(ka.deleteDomainRoleToUser(UserID, ((KeystoneRoleEntity)ka.mapRoleByName.get("developer")).getRoleID()))
+					
 					return "201";
 				else
 					return "500";
@@ -487,13 +501,15 @@ public class UserSessionManager  {
 				
 				if(item.getStatus().equals(1)){
 					if(ka.grantDomainRoleToUser(approve.getSponsorId(), ((KeystoneRoleEntity)ka.mapRoleByName.get("developer")).getRoleID())&&approveDAO.save(item)){
+						logger.info("批准用户"+((UserSession)mapSession.get(token)).getKue().getUserID()+"的申请成为developer权限成功");
 						return "201";
 					}else
 						return "500";
 				}else{
-					if(approveDAO.save(item))
+					if(approveDAO.save(item)){
+						logger.info("批准用户"+((UserSession)mapSession.get(token)).getKue().getUserID()+"的申请成为developer权限成功");
 						return "201";
-					else
+					}else
 						return "500";
 				}	
 			}else
@@ -562,6 +578,7 @@ public class UserSessionManager  {
 				if(model.getCreateUserId()!=((UserSession)mapSession.get(token)).getKue().getUserID()){
 					ApplyTable applyTable = new ApplyTable(((UserSession)mapSession.get(token)).getKue().getUserID(),model.getCreateUserId(), modelId, 0, "", roleName);
 					if(applyTableDAO.save(applyTable)){
+						logger.info("用户"+((UserSession)mapSession.get(token)).getKue().getUserID()+"申请使用模型"+modelId+roleName+"成功！");
 						return 201;
 					}else
 						return 500;

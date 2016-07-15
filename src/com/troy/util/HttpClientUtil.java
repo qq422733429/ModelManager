@@ -29,41 +29,45 @@ public class HttpClientUtil {
 	
 	public HttpResponse doGet(String url) throws KeyManagementException, NoSuchAlgorithmException, ClientProtocolException, IOException{
 		
-			HttpGet httpGET = null;
+			HttpGet httpGET = new HttpGet(url);
 			httpClient = new SSLClient();
-			httpGET = new HttpGet(url);
+			httpGET.releaseConnection();
 			httpGET.setHeader("X-Auth-Token",X_TOKEN);
 			httpGET.setHeader("Accept","application/json");
 			httpGET.setHeader("Content-Type","application/json");
-			return  httpClient.execute(httpGET);
+			HttpResponse httpResponse = httpClient.execute(httpGET);
+			return  httpResponse;
 	}
 	public HttpResponse doPost(String url,String bodys) throws KeyManagementException, NoSuchAlgorithmException, ClientProtocolException, IOException{  
           
-        	HttpPost httpPost = null;  
-            httpClient = new SSLClient();  
-            httpPost = new HttpPost(url);
+        	HttpPost httpPost = new HttpPost(url); 
+            httpClient = new SSLClient();
+            httpPost.releaseConnection();
             httpPost.setHeader("X-Auth-Token",X_TOKEN);
             httpPost.setHeader("Accept","application/json");
-            httpPost.setHeader("Content-Type","application/json");
-            StringEntity se = new StringEntity(bodys);
+            httpPost.setHeader("Content-Type","application/json; charset=utf-8");
+            StringEntity se = new StringEntity(bodys, "UTF-8");
             httpPost.setEntity(se);
-            return httpClient.execute(httpPost);
+            HttpResponse httpResponse =httpClient.execute(httpPost);
+            
+            return httpResponse;
     } 
 	public HttpResponse doPut(String url) throws KeyManagementException, NoSuchAlgorithmException, ClientProtocolException, IOException{  
         
-        	HttpPut httpPut = null;
-            httpClient = new SSLClient();  
-            httpPut = new HttpPut(url);
+        	HttpPut httpPut = new HttpPut(url);
+            httpClient = new SSLClient();
+            httpPut.releaseConnection();
             httpPut.setHeader("X-Auth-Token",X_TOKEN);
             httpPut.setHeader("Accept","application/json");
             httpPut.setHeader("Content-Type","application/json");
-            return httpClient.execute(httpPut);
+            HttpResponse httpResponse =httpClient.execute(httpPut);
+            return httpResponse;
     }
 	public HttpResponse doDelete(String url) throws KeyManagementException, NoSuchAlgorithmException, ClientProtocolException, IOException{  
         
-        HttpDelete httpDelete = null;
+        	HttpDelete httpDelete = new HttpDelete(url);
             httpClient = new SSLClient();  
-            httpDelete = new HttpDelete(url);
+            httpDelete.releaseConnection();
             httpDelete.setHeader("X-Auth-Token",X_TOKEN);
             httpDelete.setHeader("Accept","application/json");
             httpDelete.setHeader("Content-Type","application/json");

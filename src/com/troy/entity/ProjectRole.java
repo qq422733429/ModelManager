@@ -3,7 +3,6 @@ package com.troy.entity;
 import net.sf.json.JSONObject;
 
 public class ProjectRole {
-	private KeystoneProjectEntity kpe = new KeystoneProjectEntity();
 	private Model model;
 	public Model getModel() {
 		return model;
@@ -30,18 +29,12 @@ public class ProjectRole {
 	public String getJson(){
 		JSONObject object = JSONObject.fromObject(model);
 		  
-		return "\"Project\":{"+kpe.getJson()+",\"model\":"+object.toString()+",\"owner\":\""+owner+"\",\"writer\":\""+writer+"\",\"executer\":\""+executer+"\"}";
+		return "\"Project\":{\"model\":"+object.toString()+",\"owner\":\""+owner+"\",\"writer\":\""+writer+"\",\"executer\":\""+executer+"\"}";
 	}
 	
 	
 	
 	
-	public KeystoneProjectEntity getKpe() {
-		return kpe;
-	}
-	public void setKpe(KeystoneProjectEntity kpe) {
-		this.kpe = kpe;
-	}
 	public ProjectRole(){
 		owner=false;
 		writer=false;

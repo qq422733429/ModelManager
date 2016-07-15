@@ -48,10 +48,9 @@
         class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
         <property name="defaultEncoding" value="UTF-8" />
         <!-- 指定所上传文件的总大小不能超过2000KB。注意maxUploadSize属性的限制不是针对单个文件，而是所有文件的容量之和 -->
-        <property name="maxUploadSize" value="102400000" />
+        <property name="maxUploadSize" value="204800000" />
         <!-- 但是经实验，上传文件大小若小于此参数，则不会生成临时文件,此处设置为1字节，即必然生成文件 -->
-        <property name="maxInMemorySize" value="1" />  
-
+        <property name="maxInMemorySize" value="1" />
     </bean>
 
 	
@@ -69,8 +68,8 @@
 		  <constructor-arg name="url" value="192.168.121.95:5000/v3/" />
 		  <constructor-arg name="X_TOKEN" value="416cda94d5fc892e1c8e" />
 		  <property name="modeldao" ref="modelDAO"/>
-		  
-		  <!-- 
+		   
+		   <!-- 
 		  <constructor-arg name="url" value="10.0.118.213:5000/v3/" />
 		  <constructor-arg name="X_TOKEN" value="59c552863f968e04be26" />  
 		  <property name="domainId" value="a144590a01cd41c78bed4e1118e567c6"/> 
@@ -81,8 +80,8 @@
 	<!-- 使用hadoop的相关api的配置 -->
 	<bean id="hadoopAPI" class="com.troy.util.HadoopAPI" scope="singleton">
 		<!-- hadoop地址 -->
-		<constructor-arg name="HadoopHostUrl" value="192.168.121.35:50070/webhdfs/v1" /> 
-		<!-- <constructor-arg name="HadoopHostUrl" value="10.0.118.201:50070/webhdfs/v1" /> -->
+		<constructor-arg name="HadoopHostUrl" value="192.168.121.35:50070/webhdfs/v1" />
+		<!--  <constructor-arg name="HadoopHostUrl" value="10.0.118.201:50070/webhdfs/v1" />   -->
 		<!-- hadoop的默认用户名 -->
 		<constructor-arg name="hdfsUserName" value="cdhfive"/>
 	</bean>
@@ -106,8 +105,8 @@
 		<property name="modelDAO" ref="modelDAO"/>
 		<property name="hadoopAPI" ref="hadoopAPI"/>
 		<property name="ka" ref="keystoneAPI" />
-		<property name="oozie" value="10.0.12.160:8080/AISchedule"/>
-		<!-- <property name="oozie" value="10.0.118.209:8080/AISchedule"/> -->
+		<property name="oozie" value="10.0.12.160:8080/AISchedule"/> 
+		 <!--<property name="oozie" value="10.0.118.209:8080/AISchedule"/> -->
 	</bean>
 	
 	
@@ -129,7 +128,7 @@
 		<property name="jobStatusManager" ref="jobStatusManager"/>
 		<property name="userSessionManager" ref="userSessionManager"/>
 		<property name="modelDAO" ref="modelDAO"/>
-		<property name="oozie" value="10.0.12.160:8080/AISchedule"/>
+		<property name="oozie" value="10.0.12.160:8080/AISchedule"/> 
 		<!-- <property name="oozie" value="10.0.118.209:8080/AISchedule"/> -->
 	</bean>
 	

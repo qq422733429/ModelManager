@@ -5,8 +5,10 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.httpclient.auth.AuthenticationException;
 import org.apache.http.HttpException;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.log4j.Logger;
@@ -66,17 +68,13 @@ public class UserService {
 	public void loginByToken(HttpServletResponse response,@PathVariable("userID") String userID,@PathVariable("token") String token){
 			response.setContentType("application/json;charset=utf-8");
 			try {
-				String id="201";
-				if(!userSessionManager.getMapSession().containsKey(token)){
-					id = userSessionManager.UserLogin(userID, token);
-				}
-				if (id.equals("201")){
+				if (userSessionManager.UserLogin(userID, token)){
 					String jsonData =((UserSession)userSessionManager.getMapSession().get(token)).getJson();
 					logger.info("用户"+userID+"登录成功,token为"+token);
 					response.getWriter().write(jsonData);
 				}else{
 					logger.error("用户"+userID+"登录失败,token与用户名不符合");
-					response.sendError(response.SC_BAD_REQUEST, "The token does not match with the user");
+					throw new AuthenticationException("token与用户名不符合");
 				}
 			} catch (KeyManagementException | NoSuchAlgorithmException
 					 | IOException | HttpException e) {
@@ -85,10 +83,10 @@ public class UserService {
 					stringBuffer.append("\t"+element+"\n");
 				}
 				logger.error(e.getMessage()+"\n"+stringBuffer.toString());
-				
 				try {
-					response.sendError(response.SC_UNAUTHORIZED, e.getMessage());
-				} catch (IOException e1) {
+					response.setStatus(400);
+					response.getWriter().write(e.getMessage());	
+				} catch (IOException e1)  {
 					e1.printStackTrace();
 				}
 			}
@@ -119,7 +117,8 @@ public class UserService {
 			}
 			logger.error(e.getMessage()+"\n"+stringBuffer.toString());
 			try {
-				response.sendError(response.SC_NOT_FOUND, "No userID is"+userID);
+				response.setStatus(400);
+				response.getWriter().write(e.getMessage());	
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
@@ -149,7 +148,8 @@ public class UserService {
 			}
 			logger.error(e.getMessage()+"\n"+stringBuffer.toString());
 			try {
-				response.sendError(response.SC_NOT_FOUND, "No userID is"+userName);
+				response.setStatus(400);
+				response.getWriter().write(e.getMessage());	
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
@@ -178,7 +178,8 @@ public class UserService {
 			}
 			logger.error(e.getMessage()+"\n"+stringBuffer.toString());
 			try {
-				response.sendError(response.SC_NOT_FOUND, "No groupName is"+groupName);
+				response.setStatus(400);
+				response.getWriter().write(e.getMessage());	
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
@@ -209,7 +210,8 @@ public class UserService {
 			}
 			logger.error(e.getMessage()+"\n"+stringBuffer.toString());
 			try {
-				response.sendError(response.SC_NOT_FOUND, "No ProjectID is "+projectID);
+				response.setStatus(400);
+				response.getWriter().write(e.getMessage());	
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
@@ -237,7 +239,8 @@ public class UserService {
 			}
 			logger.error(e.getMessage()+"\n"+stringBuffer.toString());
 			try {
-				response.sendError(response.SC_NOT_FOUND, "No ProjectID is "+groupID);
+				response.setStatus(400);
+				response.getWriter().write(e.getMessage());	
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
@@ -258,11 +261,11 @@ public class UserService {
 			if (temp.equals("201")){
 				response.getWriter().write("{\"status\":\"success\"}");
 			}else if (temp.equals("401")){
-				response.sendError(response.SC_FORBIDDEN, "User is Unauthorized");
+				throw new AuthenticationException("用户权限不足");
 			}else if (temp.equals("404")){
-				response.sendError(response.SC_NOT_FOUND, "User is offline");
+				throw new AuthenticationException("用户未登录或者token已失效");
 			}else{
-				response.sendError(response.SC_BAD_REQUEST, "Internal error");
+				throw new RuntimeException("服务器内部错误");
 			}
 		} catch (KeyManagementException | NoSuchAlgorithmException
 				 | IOException | HttpException e) {
@@ -272,7 +275,8 @@ public class UserService {
 			}
 			logger.error(e.getMessage()+"\n"+stringBuffer.toString());
 			try {
-				response.sendError(response.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+				response.setStatus(400);
+				response.getWriter().write(e.getMessage());	
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
@@ -295,11 +299,11 @@ public class UserService {
 			if (temp.equals("201")){
 				response.getWriter().write("{\"status\":\"success\"}");
 			}else if (temp.equals("401")){
-				response.sendError(response.SC_FORBIDDEN, "User is Unauthorized");
+				throw new AuthenticationException("用户权限不足");
 			}else if (temp.equals("404")){
-				response.sendError(response.SC_NOT_FOUND, "User is offline");
+				throw new AuthenticationException("用户未登录或者token已失效");
 			}else{
-				response.sendError(response.SC_BAD_REQUEST, "Internal error");
+				throw new RuntimeException("服务器内部错误");
 			}
 		} catch (KeyManagementException | NoSuchAlgorithmException
 				 | IOException | HttpException e) {
@@ -309,7 +313,8 @@ public class UserService {
 			}
 			logger.error(e.getMessage()+"\n"+stringBuffer.toString());
 			try {
-				response.sendError(response.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+				response.setStatus(400);
+				response.getWriter().write(e.getMessage());	
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
@@ -330,15 +335,16 @@ public class UserService {
 	 * @param token
 	 */
 	@RequestMapping(value = "/loginOut/{token}",method = RequestMethod.GET)
-	public void loginOut(HttpServletResponse response,@PathVariable("token") String token) {
+	public void loginOut(HttpServletResponse response,HttpServletRequest request,@PathVariable("token") String token) {
 		try {
 			response.setContentType("application/json;charset=utf-8");
-			if(!userSessionManager.getMapSession().containsKey(token))
-				throw new HttpException("there is not this token");
-			 
-			userSessionManager.getMapSession().remove(token);
-			logger.info("token"+token+"登出成功");
-			response.getWriter().write("{\"status\":\"success\"}");
+			if(userSessionManager.getMapSession().containsKey(token)){
+				userSessionManager.getMapSession().remove(token);
+				logger.info("token"+token+"登出成功");
+				response.getWriter().write("{\"status\":\"success\"}");
+			}else
+				throw new RuntimeException("用户未登录,token:"+token+",IP"+request.getRemoteHost());
+			
 		} catch (Exception e) {
 			StringBuffer stringBuffer = new StringBuffer();
 			for (StackTraceElement element : e.getStackTrace()) {
@@ -346,7 +352,8 @@ public class UserService {
 			}
 			logger.error(e.getMessage()+"\n"+stringBuffer.toString());
 			try {
-				response.sendError(response.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+				response.setStatus(400);
+				response.getWriter().write(e.getMessage());	
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
@@ -368,11 +375,10 @@ public class UserService {
 		try {
 			String temp =userSessionManager.createGroup(token, kge);
 			if (temp.equals("401")){
-				response.sendError(response.SC_FORBIDDEN, "User is Unauthorized");
+				throw new AuthenticationException("用户权限不足");
 			}else if (temp.equals("404")){
-				response.sendError(response.SC_NOT_FOUND, "User is offline");
+				throw new AuthenticationException("用户未登录或者token已失效");
 			}else{
-				
 				response.getWriter().write(temp);
 				
 			}
@@ -384,7 +390,8 @@ public class UserService {
 			}
 			logger.error(e.getMessage()+"\n"+stringBuffer.toString());
 			try {
-				response.sendError(response.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+				response.setStatus(400);
+				response.getWriter().write(e.getMessage());	
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
@@ -411,7 +418,8 @@ public class UserService {
 			}
 			logger.error(e.getMessage()+"\n"+stringBuffer.toString());
 			try {
-				response.sendError(response.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+				response.setStatus(400);
+				response.getWriter().write(e.getMessage());	
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
@@ -438,16 +446,13 @@ public class UserService {
 				break;
 			case 400:
 				logger.info("用户"+userName+"重置密码失败：用户未发起重置请求");
-				response.sendError(response.SC_BAD_REQUEST, "User is not applied changing password");
-				break;
+				throw new RuntimeException("用户"+userName+"重置密码失败：用户未发起重置请求");
 			case 403:
 				logger.info("用户"+userName+"重置密码失败：验证码不正确");
-				response.sendError(response.SC_FORBIDDEN, "identifyingCode is incorrect");
-				break;
+				throw new AuthenticationException("用户"+userName+"重置密码失败：验证码不正确");
 			default:
 				logger.info("用户"+userName+"重置密码失败");
-				response.sendError(response.SC_INTERNAL_SERVER_ERROR, "SC_INTERNAL_SERVER_ERROR");
-				break;
+				throw new AuthenticationException("用户"+userName+"重置密码失败");
 			}
 		} catch (HttpException | KeyManagementException | NoSuchAlgorithmException | IOException e) {
 			StringBuffer stringBuffer = new StringBuffer();
@@ -456,7 +461,8 @@ public class UserService {
 			}
 			logger.error(e.getMessage()+"\n"+stringBuffer.toString());
 			try {
-				response.sendError(response.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+				response.setStatus(400);
+				response.getWriter().write(e.getMessage());	
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
@@ -479,14 +485,11 @@ public class UserService {
 				response.getWriter().write("{\"status\":\"success\"}");
 				break;
 			case 403:
-				response.sendError(response.SC_FORBIDDEN, "need admin token");
-				break;
+				throw new AuthenticationException("用户权限不足");
 			case 404:
-				response.sendError(response.SC_FORBIDDEN, "offline");
-				break;
+				throw new AuthenticationException("用户未登录或者token已失效");
 			default:
-				response.sendError(response.SC_INTERNAL_SERVER_ERROR, "SC_INTERNAL_SERVER_ERROR");
-				break;
+				throw new RuntimeException("服务器内部错误");
 			}
 		} catch (HttpException | KeyManagementException | NoSuchAlgorithmException | IOException e) {
 			StringBuffer stringBuffer = new StringBuffer();
@@ -495,11 +498,11 @@ public class UserService {
 			}
 			logger.error(e.getMessage()+"\n"+stringBuffer.toString());
 			try {
-				response.sendError(response.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+				response.setStatus(400);
+				response.getWriter().write(e.getMessage());	
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
 		}
 	}
-	
 }

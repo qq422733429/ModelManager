@@ -1,6 +1,9 @@
 package com.troy.dao;
 
 import com.troy.util.HibernateSessionFactory;
+
+import org.hibernate.CacheMode;
+import org.hibernate.FlushMode;
 import org.hibernate.Session;
 
 
@@ -11,6 +14,8 @@ import org.hibernate.Session;
 public class BaseHibernateDAO implements IBaseHibernateDAO {
 	
 	public Session getSession() {
+		HibernateSessionFactory.getSession().setCacheMode(CacheMode.REFRESH);
+		HibernateSessionFactory.getSession().flush();
 		return HibernateSessionFactory.getSession();
 	}
 	

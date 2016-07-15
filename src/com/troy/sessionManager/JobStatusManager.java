@@ -55,7 +55,8 @@ public class JobStatusManager {
 		    return jsonObj;
 		   
 	    }else{
-        	throw new HttpException(hrp.getStatusLine().getStatusCode()+"\t"+hrp.getStatusLine().getReasonPhrase());
+	    	EntityUtils.consume(hrp.getEntity());
+        	throw new HttpException("开始翻译作业出错，"+hrp.getStatusLine().getReasonPhrase());
 		}
 		
 		
@@ -78,8 +79,10 @@ public class JobStatusManager {
 		    EntityUtils.consume(hrp.getEntity());
 		    return jsonObj;
 		   
-	    }else{
-        	throw new HttpException(hrp.getStatusLine().getStatusCode()+"\t"+hrp.getStatusLine().getReasonPhrase());
+	    }else if((hrp.getStatusLine().getStatusCode()) == 403){
+        	throw new HttpException("开始作业失败:模型正在运行");
+		}else{
+			throw new HttpException("开始作业失败:参数不合法");
 		}
 	}
 	
@@ -88,9 +91,11 @@ public class JobStatusManager {
 		String content = jobId;
         HttpResponse hrp = hcu.doPost(url.toString(), content);
         if((hrp.getStatusLine().getStatusCode()) == 200){
+        	EntityUtils.consume(hrp.getEntity());
 		    return 200;
 	    }else{
-        	throw new HttpException("kill job failed!");
+	    	EntityUtils.consume(hrp.getEntity());
+        	throw new HttpException("停止作业失败，"+hrp.getStatusLine().getReasonPhrase());
 		}
 	}
 	
@@ -99,9 +104,11 @@ public class JobStatusManager {
 		String content = jobId;
         HttpResponse hrp = hcu.doPost(url.toString(), content);
         if((hrp.getStatusLine().getStatusCode()) == 200){
+        	EntityUtils.consume(hrp.getEntity());
 		    return 200;
 	    }else{
-        	throw new HttpException("kill job failed!");
+	    	EntityUtils.consume(hrp.getEntity());
+        	throw new HttpException("暂停作业失败，"+hrp.getStatusLine().getReasonPhrase());
 		}
 	}
 	public int resumeJob(String Oozieurl,String jobId) throws HttpException, IOException, KeyManagementException, NoSuchAlgorithmException{
@@ -109,18 +116,17 @@ public class JobStatusManager {
 		String content = jobId;
         HttpResponse hrp = hcu.doPost(url.toString(), content);
         if((hrp.getStatusLine().getStatusCode()) == 200){
+        	EntityUtils.consume(hrp.getEntity());
 		    return 200;
 	    }else{
-        	throw new HttpException("kill job failed!");
+	    	EntityUtils.consume(hrp.getEntity());
+        	throw new HttpException("回复作业失败，"+hrp.getStatusLine().getReasonPhrase());
 		}
 	}
 	
 	
 	public String startSetTimeJob(String Oozieurl,String userID,String appPath,String time,String modelId,String modelName) throws HttpException, IOException, KeyManagementException, NoSuchAlgorithmException{
-		
-		
 		URL url = new URL("http://"+Oozieurl+"/schedule/coordinator");
-		   
         String content = "{\"userId\":\""+userID+"\",\"modelId\":\""+modelId+"\",\"modelName\":\""+modelName+"\",\"appPath\":\""+"hdfs://datanode1:8020"+appPath+"main"+"\",\"frequency\":\"\",\"start\":\""+time+"\",\"end\":\"\"}";
         HttpResponse hrp =hcu.doPost(url.toString(), content);
         
@@ -128,11 +134,11 @@ public class JobStatusManager {
 	    if((hrp.getStatusLine().getStatusCode()) == 200){
 		    String jsonObj =EntityUtils.toString(hrp.getEntity());
 		    EntityUtils.consume(hrp.getEntity());
-		    System.out.println(jsonObj);
 		    return jsonObj;
-		   
-	    }else{
-        	throw new HttpException(hrp.getStatusLine().getStatusCode()+"\t"+hrp.getStatusLine().getReasonPhrase());
+	    }else if((hrp.getStatusLine().getStatusCode()) == 403){
+        	throw new HttpException("开始定时作业失败:模型正在运行");
+		}else{
+			throw new HttpException("开始定时作业失败:参数不合法");
 		}
 	}
 	
@@ -149,11 +155,11 @@ public class JobStatusManager {
 	    if((hrp.getStatusLine().getStatusCode()) == 200){
 		    String jsonObj =EntityUtils.toString(hrp.getEntity());
 		    EntityUtils.consume(hrp.getEntity());
-		    System.out.println(jsonObj);
 		    return jsonObj;
-		   
-	    }else{
-        	throw new HttpException(hrp.getStatusLine().getStatusCode()+"\t"+hrp.getStatusLine().getReasonPhrase());
+	    }else if((hrp.getStatusLine().getStatusCode()) == 403){
+        	throw new HttpException("开始周期作业失败:模型正在运行");
+		}else{
+			throw new HttpException("开始周期作业失败:参数不合法");
 		}
 	}
 	

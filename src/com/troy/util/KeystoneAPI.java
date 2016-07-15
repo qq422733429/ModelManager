@@ -30,6 +30,7 @@ import com.troy.entity.KeystoneGroupEntity;
 import com.troy.entity.KeystoneProjectEntity;
 import com.troy.entity.KeystoneRoleEntity;
 import com.troy.entity.KeystoneUserEntity;
+import com.troy.entity.Model;
 import com.troy.entity.ProjectRole;
 import com.troy.entity.UserSession;
 
@@ -114,6 +115,7 @@ public class KeystoneAPI {
         	return jsonObj.get("id").toString();
         	
         }else{
+        	EntityUtils.consume(hrp.getEntity());
         	throw new HttpException(hrp.getStatusLine().getStatusCode()+"\t"+hrp.getStatusLine().getReasonPhrase());
         }
 	}
@@ -126,6 +128,7 @@ public class KeystoneAPI {
 		URL url = new URL("http://"+hostURL+"roles");
 		HttpResponse hrp=hcu.doGet(url.toString());
 	    if((hrp.getStatusLine().getStatusCode()) != 200){
+	    	EntityUtils.consume(hrp.getEntity());
         	throw new HttpException(hrp.getStatusLine().getStatusCode()+"\t"+hrp.getStatusLine().getReasonPhrase());
 			
 	    }
@@ -156,7 +159,8 @@ public class KeystoneAPI {
 			    return getSpecialUser(jsonObj.getJSONObject("token").getJSONObject("user").getString("id"));
 			   
 		    }else{
-	        	throw new HttpException(hrp.getStatusLine().getStatusCode()+"\t Can not find token "+token);
+		    	EntityUtils.consume(hrp.getEntity());
+	        	throw new HttpException(hrp.getStatusLine().getStatusCode()+"\t 找不到token  "+token);
 			}
 		
 	}
@@ -180,7 +184,8 @@ public class KeystoneAPI {
 		    return kue;
 		    
 	    }else{
-        	throw new HttpException(hrp.getStatusLine().getStatusCode()+"\t"+hrp.getStatusLine().getReasonPhrase());
+	    	EntityUtils.consume(hrp.getEntity());
+        	throw new HttpException("get user by name worry");
 		}
 	
 	}
@@ -203,6 +208,7 @@ public class KeystoneAPI {
 		    return kue;
 		    
 	    }else{
+	    	EntityUtils.consume(hrp.getEntity());
         	throw new HttpException(hrp.getStatusLine().getStatusCode()+"\t"+hrp.getStatusLine().getReasonPhrase());
 		}
 	
@@ -212,6 +218,7 @@ public class KeystoneAPI {
 			URL url = new URL("http://"+hostURL+"users/"+UserID);
 			HttpResponse hrp=hcu.doGet(url.toString());
 		    if((hrp.getStatusLine().getStatusCode()) != 200){
+		    	EntityUtils.consume(hrp.getEntity());
 	        	throw new HttpException(hrp.getStatusLine().getStatusCode()+"\t"+hrp.getStatusLine().getReasonPhrase());
 				
 		    }
@@ -235,12 +242,12 @@ public class KeystoneAPI {
 		URL url = new URL("http://"+hostURL+"projects/"+ProjectID);
 		HttpResponse hrp=hcu.doGet(url.toString());
 	    if((hrp.getStatusLine().getStatusCode()) != 200){
+	    	EntityUtils.consume(hrp.getEntity());
         	throw new HttpException(hrp.getStatusLine().getStatusCode()+"\t"+hrp.getStatusLine().getReasonPhrase());
 			
 	    }
-	    
 	    JSONObject jsonObj =new JSONObject().fromObject(EntityUtils.toString(hrp.getEntity()));
-	    EntityUtils.consumeQuietly(hrp.getEntity());
+	    EntityUtils.consume(hrp.getEntity());
 	    jsonObj = jsonObj.getJSONObject("project");
 	    KeystoneProjectEntity kue = new KeystoneProjectEntity();
 	    kue.setDescription(jsonObj.getString("description"));
@@ -255,7 +262,8 @@ public class KeystoneAPI {
 		URL url = new URL("http://"+hostURL+"groups/"+groupID);
 		HttpResponse hrp=hcu.doGet(url.toString());
 	    if((hrp.getStatusLine().getStatusCode()) != 200){
-        	throw new HttpException(hrp.getStatusLine().getStatusCode()+"\t"+hrp.getStatusLine().getReasonPhrase());
+	    	EntityUtils.consume(hrp.getEntity());
+        	throw new HttpException("获取组详情失败");
 			
 	    }
 	    JSONObject jsonObj =new JSONObject().fromObject(EntityUtils.toString(hrp.getEntity()));
@@ -275,7 +283,7 @@ public class KeystoneAPI {
 	public void getAllGrant(String userID,UserSession us) throws KeyManagementException, NoSuchAlgorithmException, ClientProtocolException, IOException, HttpException{
 		
 		if (!(getAllGrantByGroup(userID,us)&&getAllGrantByUser(userID,us))){
-			throw new IOException("get grant fail!");
+			throw new IOException("获取用户权限失败");
 		}
 	}
 	private boolean getAllGrantByUser(String userID,UserSession us) throws KeyManagementException, NoSuchAlgorithmException, ClientProtocolException, IOException, HttpException{
@@ -283,11 +291,13 @@ public class KeystoneAPI {
 			URL url = new URL("http://"+hostURL+"role_assignments?user.id="+userID);
 			HttpResponse hrp=hcu.doGet(url.toString());
 		    if((hrp.getStatusLine().getStatusCode()) != 200){
-	        	throw new HttpException(hrp.getStatusLine().getStatusCode()+"\t"+hrp.getStatusLine().getReasonPhrase());
+		    	EntityUtils.consume(hrp.getEntity());
+	        	throw new HttpException("获取用户权限失败");
 				
 		    }
 		    JSONObject jsonObj =new JSONObject().fromObject(EntityUtils.toString(hrp.getEntity()));
 		    EntityUtils.consume(hrp.getEntity());
+		    
 		     for (Object item : jsonObj.getJSONArray("role_assignments")) {
 		    	 if (((JSONObject)item).getJSONObject("scope").containsKey("domain")){
 		    		 String aa = ((JSONObject)item).getJSONObject("role").getString("id");
@@ -300,7 +310,9 @@ public class KeystoneAPI {
 		    	 }else{
 			    	String id=((JSONObject)item).getJSONObject("scope").getJSONObject("project").getString("id");
 					ProjectRole prtemp = new ProjectRole();
-					
+					Model model =modeldao.findById(id);
+					if(model==null)
+						continue;
 			    	if(us.getMapMyProjects().containsKey(id)){
 						prtemp=(ProjectRole)us.getMapMyProjects().get(id);
 						if(((KeystoneRoleEntity)mapRoleByID.get((((JSONObject)item).getJSONObject("role").getString("id")))).getRoleName().equals("owner")){
@@ -313,7 +325,6 @@ public class KeystoneAPI {
 							prtemp.setExecuter(true);
 						}
 					}else{
-						prtemp.setKpe(getSpecialProject(id));
 						if(((KeystoneRoleEntity)mapRoleByID.get((((JSONObject)item).getJSONObject("role").getString("id")))).getRoleName().equals("owner")){
 							prtemp.setOwner(true);
 						}
@@ -323,7 +334,7 @@ public class KeystoneAPI {
 						if(((KeystoneRoleEntity)mapRoleByID.get((((JSONObject)item).getJSONObject("role").getString("id")))).getRoleName().equals("executer")){
 							prtemp.setExecuter(true);
 						}
-						prtemp.setModel(modeldao.findById(id));
+						prtemp.setModel(model);
 						us.getMapMyProjects().put(id, prtemp);
 					}
 			    	
@@ -339,6 +350,7 @@ public class KeystoneAPI {
 			URL url = new URL("http://"+hostURL+"users/"+userID+"/groups");
 			HttpResponse hrp=hcu.doGet(url.toString());
 		    if((hrp.getStatusLine().getStatusCode()) != 200){
+		    	EntityUtils.consume(hrp.getEntity());
 	        	throw new HttpException(hrp.getStatusLine().getStatusCode()+"\t"+hrp.getStatusLine().getReasonPhrase());
 				
 		    }
@@ -360,9 +372,12 @@ public class KeystoneAPI {
 					        throw new IOException("get grant by group fail");
 					    }
 						    JSONObject jsonObj1 =new JSONObject().fromObject(EntityUtils.toString(hrp2.getEntity()));
+						    EntityUtils.consume(hrp2.getEntity());
 						    for (Object item2 : jsonObj1.getJSONArray("role_assignments")) {
 						    	String id=((JSONObject)item2).getJSONObject("scope").getJSONObject("project").getString("id");
-								
+						    	Model model =modeldao.findById(id);
+								if(model==null)
+									continue;
 						    	if(us.getMapMyProjects().containsKey(id)){
 						    		ProjectRole prtemp=(ProjectRole)us.getMapMyProjects().get(id);
 									if(((KeystoneRoleEntity)mapRoleByID.get((((JSONObject)item2).getJSONObject("role").getString("id")))).getRoleName().equals("owner")){
@@ -376,7 +391,6 @@ public class KeystoneAPI {
 									}
 								}else{
 									ProjectRole pr =new ProjectRole();
-									pr.setKpe(getSpecialProject(id));
 									if(((KeystoneRoleEntity)mapRoleByID.get((((JSONObject)item2).getJSONObject("role").getString("id")))).getRoleName().equals("owner")){
 										pr.setOwner(true);
 									}
@@ -386,7 +400,7 @@ public class KeystoneAPI {
 									if(((KeystoneRoleEntity)mapRoleByID.get((((JSONObject)item2).getJSONObject("role").getString("id")))).getRoleName().equals("executer")){
 										pr.setExecuter(true);
 									}
-									pr.setModel(modeldao.findById(id));
+									pr.setModel(model);
 									us.getMapMyProjects().put(id, pr);
 								}
 						    }
@@ -402,6 +416,7 @@ public class KeystoneAPI {
 		
 			URL url = new URL("http://"+hostURL+"users/"+userID);
 			HttpResponse hrp=hcu.doDelete(url.toString());
+			
 		    if((hrp.getStatusLine().getStatusCode()) != 204){
 	        	throw new HttpException(hrp.getStatusLine().getStatusCode()+"\t"+hrp.getStatusLine().getReasonPhrase());
 
@@ -411,13 +426,14 @@ public class KeystoneAPI {
 		
 	public String createProject(KeystoneProjectEntity kpe,String userID) throws KeyManagementException, NoSuchAlgorithmException, ClientProtocolException, IOException, HttpException{
 			URL url = new URL("http://"+hostURL+"projects");
-		    String content = "{\"project\": {\"description\": \""+kpe.getDescription()+"\",\"domain_id\": \""+domainId+"\",\"enabled\": true,\"name\": \""+kpe.getProjectName()+"\"}}";
+		    String content = "{\"project\": {\"description\": \""+kpe.getDescription()+"\",\"domain_id\": \""+domainId+"\",\"enabled\": true,\"name\": \""+kpe.getProjectName()+userID+"\"}}";
 		    HttpResponse hrp =hcu.doPost(url.toString(), content);
-	        if((hrp.getStatusLine().getStatusCode())!=201){
-	        	throw new HttpException(hrp.getStatusLine().getStatusCode()+"\t"+hrp.getStatusLine().getReasonPhrase());
-				
+		    if((hrp.getStatusLine().getStatusCode())==409){
+	        	throw new HttpException("创建模型失败：模型名字重复");
 	        }
-		    
+	        if((hrp.getStatusLine().getStatusCode())!=201){
+	        	throw new HttpException("创建模型失败："+hrp.getStatusLine().getReasonPhrase());
+	        }
 	        JSONObject jsonObj =new JSONObject().fromObject(EntityUtils.toString(hrp.getEntity()));
 	        EntityUtils.consume(hrp.getEntity());
 	        
@@ -438,8 +454,10 @@ public class KeystoneAPI {
 	        String content = "{\"user\":{\"password\":\""+md5Method(newPwd)+"\",\"original_password\":\""+md5Method(oldPwd)+"\"}}";
 	        HttpResponse hrp =hcu.doPost(url.toString(), content);
 	        if((hrp.getStatusLine().getStatusCode())==204){
+	        	EntityUtils.consume(hrp.getEntity());
 		    	return true;
 			}else{
+				EntityUtils.consume(hrp.getEntity());
 	        	throw new HttpException(hrp.getStatusLine().getStatusCode()+"\t"+hrp.getStatusLine().getReasonPhrase());
 			}
 	}
@@ -484,6 +502,7 @@ public class KeystoneAPI {
 	        String content = "{\"group\":{\"description\":\""+kge.getGroupDescription()+"\",\"domain_id\":\""+domainId+"\",\"name\":\""+kge.getGroupName()+"\"}}";
 	        HttpResponse hrp =hcu.doPost(url.toString(), content);
 	        if((hrp.getStatusLine().getStatusCode())!=201){
+	        	EntityUtils.consume(hrp.getEntity());
 	        	throw new IOException(hrp.getStatusLine().getStatusCode()+"\t"+hrp.getStatusLine().getReasonPhrase());
 				
 	        }
@@ -548,9 +567,11 @@ public class KeystoneAPI {
 	        String content = "{\"role\": {\"name\": \""+roleName+"\"}}";
 	         HttpResponse hrp =hcu.doPost(url.toString(), content);
 	        if((hrp.getStatusLine().getStatusCode())!=201){
+	        	EntityUtils.consume(hrp.getEntity());
 	        	throw new HttpException(hrp.getStatusLine().getStatusCode()+"\t"+hrp.getStatusLine().getReasonPhrase());
 				
 	        }
+	        EntityUtils.consume(hrp.getEntity());
 				return true;
 			
 	}
@@ -584,6 +605,7 @@ public class KeystoneAPI {
 		URL url = new URL("http://"+hostURL+"role_assignments?user.id="+userID+"&scope.project.id="+projectID);
 		HttpResponse hrp =hcu.doGet(url.toString());
 	    if((hrp.getStatusLine().getStatusCode()) != 200){
+	    	EntityUtils.consume(hrp.getEntity());
         	throw new HttpException(hrp.getStatusLine().getStatusCode()+"\t"+hrp.getStatusLine().getReasonPhrase());
 			
 	    }

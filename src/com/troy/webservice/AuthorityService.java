@@ -9,6 +9,7 @@ import java.util.GregorianCalendar;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.httpclient.auth.AuthenticationException;
 import org.apache.http.HttpException;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
@@ -58,11 +59,11 @@ public class AuthorityService {
 			if (temp.equals("201")){
 				response.getWriter().write("{\"status\":\"success\"}");
 			}else if (temp.equals("401")){
-				response.sendError(response.SC_FORBIDDEN, "User is Unauthorized");
+				throw new AuthenticationException( "用户权限不足");
 			}else if (temp.equals("404")){
-				response.sendError(response.SC_NOT_FOUND, "User is offline");
+				throw new AuthenticationException( "用户未登录或者token已经失效");
 			}else{
-				response.sendError(response.SC_BAD_REQUEST, "Internal error");
+				throw new RuntimeException( "服务器内部错误");
 			}
 		} catch (KeyManagementException | NoSuchAlgorithmException
 				 | IOException | HttpException e) {
@@ -72,7 +73,8 @@ public class AuthorityService {
 			}
 			logger.error(e.getMessage()+"\n"+stringBuffer.toString());
 			try {
-				response.sendError(response.SC_BAD_REQUEST, e.getMessage());
+				response.setStatus(400);
+				response.getWriter().write(e.getMessage());	
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
@@ -95,11 +97,11 @@ public class AuthorityService {
 			if (temp.equals("201")){
 				response.getWriter().write("{\"status\":\"success\"}");
 			}else if (temp.equals("401")){
-				response.sendError(response.SC_FORBIDDEN, "User is Unauthorized");
+				throw new AuthenticationException( "用户权限不足");
 			}else if (temp.equals("404")){
-				response.sendError(response.SC_NOT_FOUND, "User is offline");
+				throw new AuthenticationException( "用户未登录或者token已经失效");
 			}else{
-				response.sendError(response.SC_BAD_REQUEST, "Internal error");
+				throw new RuntimeException(  "服务器内部错误");
 			}
 		} catch (KeyManagementException | NoSuchAlgorithmException
 				 | IOException | HttpException e) {
@@ -109,7 +111,8 @@ public class AuthorityService {
 			}
 			logger.error(e.getMessage()+"\n"+stringBuffer.toString());
 			try {
-				response.sendError(response.SC_BAD_REQUEST, e.getMessage());
+				response.setStatus(400);
+				response.getWriter().write(e.getMessage());	
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
@@ -128,13 +131,14 @@ public class AuthorityService {
 		try {
 			String temp =userSessionManager.grantUserDeveloperWithoutApprove(token, userId);
 			if (temp.equals("201")){
+				logger.info("直接将用户"+userId+"赋予developer权限成功");
 				response.getWriter().write("{\"status\":\"success\"}");
 			}else if (temp.equals("403")){
-				response.sendError(response.SC_FORBIDDEN, "User is Unauthorized");
+				throw new AuthenticationException( "用户权限不足");
 			}else if (temp.equals("404")){
-				response.sendError(response.SC_NOT_FOUND, "User is offline");
+				throw new AuthenticationException( "用户未登录或者token已经失效");
 			}else{
-				response.sendError(response.SC_BAD_REQUEST, "Internal error");
+				throw new RuntimeException(  "服务器内部错误");
 			}
 		} catch (KeyManagementException | NoSuchAlgorithmException
 				 | IOException | HttpException e) {
@@ -144,7 +148,8 @@ public class AuthorityService {
 			}
 			logger.error(e.getMessage()+"\n"+stringBuffer.toString());
 			try {
-				response.sendError(response.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+				response.setStatus(400);
+				response.getWriter().write(e.getMessage());	
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
@@ -168,13 +173,14 @@ public class AuthorityService {
 		try {
 			String temp =userSessionManager.deleteUserDeveloper(token, userID);
 			if (temp.equals("201")){
+				logger.info("取消用户"+userID+"的developer权限成功");
 				response.getWriter().write("{\"status\":\"success\"}");
 			}else if (temp.equals("401")){
-				response.sendError(response.SC_FORBIDDEN, "User is Unauthorized");
+				throw new AuthenticationException( "用户权限不足");
 			}else if (temp.equals("404")){
-				response.sendError(response.SC_NOT_FOUND, "User is offline");
+				throw new AuthenticationException( "用户未登录或者token已经失效");
 			}else{
-				response.sendError(response.SC_BAD_REQUEST, "Internal error");
+				throw new RuntimeException( "服务器内部错误");
 			}
 		} catch (KeyManagementException | NoSuchAlgorithmException
 				 | IOException | HttpException e) {
@@ -184,7 +190,8 @@ public class AuthorityService {
 			}
 			logger.error(e.getMessage()+"\n"+stringBuffer.toString());
 			try {
-				response.sendError(response.SC_BAD_REQUEST, e.getMessage());
+				response.setStatus(400);
+				response.getWriter().write(e.getMessage());	
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
@@ -202,28 +209,21 @@ public class AuthorityService {
 	 */
 	@RequestMapping(value = "/applyModel/{token}/{modelId}/{roleName}",method = RequestMethod.POST)
 	 public void applyModel(HttpServletResponse response,@PathVariable("token") String token,@PathVariable("modelId") String modelId,@PathVariable("roleName") String roleName) {
-		 System.out.println("用户申请使用他人模型");
+		response.setContentType("application/json;charset=utf-8");
 		 try {
 			switch (userSessionManager.applyModelByOtherUser(token, modelId,roleName)) {
 			case 201:
 				response.getWriter().write("{\"status\":\"success\"}");
 				break;
 			case 400:
-				response.sendError(response.SC_BAD_REQUEST, "the model has not publiced");
-				break;
+				throw new RuntimeException("该模型未发布");
 			case 404:
-				response.sendError(response.SC_NOT_FOUND,"the user is offline");
-				break;
+				throw new AuthenticationException("用户未登录或者token已经失效");
 			case 403:
-				response.sendError(response.SC_FORBIDDEN, "the user have this model");
-				break;
-			case 500:
-				response.sendError(response.SC_INTERNAL_SERVER_ERROR,"INTERNAL_SERVER_ERROR");
-				break;
-
+				throw new AuthenticationException("the user have this model");
+			
 			default:
-				response.sendError(response.SC_BAD_REQUEST, "unknown error");
-				break;
+				throw new RuntimeException(  "服务器内部错误");
 			};
 		}catch (Exception e) {
 			StringBuffer stringBuffer = new StringBuffer();
@@ -232,7 +232,8 @@ public class AuthorityService {
 			}
 			logger.error(e.getMessage()+"\n"+stringBuffer.toString());
 			try {
-				response.sendError(response.SC_INTERNAL_SERVER_ERROR, "unknown error");
+				response.setStatus(400);
+				response.getWriter().write(e.getMessage());	
 			} catch (IOException e1) {
 				e1.printStackTrace();
 				
@@ -262,13 +263,13 @@ public class AuthorityService {
 			if (temp.equals("201")){
 				response.getWriter().write("{\"status\":\"success\"}");
 			}else if (temp.equals("401")){
-				response.sendError(response.SC_FORBIDDEN, "User is Unauthorized");
+				throw new AuthenticationException( "用户权限不足");
 			}else if (temp.equals("404")){
-				response.sendError(response.SC_NOT_FOUND, "User is offline");
+				throw new AuthenticationException( "用户未登录或者token已经失效");
 			}else if (temp.equals("406")){
-				response.sendError(response.SC_NOT_FOUND, "no role name is "+roleName);
+				throw new RuntimeException(  "没有角色 "+roleName);
 			}else{
-				response.sendError(response.SC_BAD_REQUEST, "Internal error");
+				throw new RuntimeException(  "服务器内部错误");
 			}
 		} catch (KeyManagementException | NoSuchAlgorithmException
 				 | IOException | HttpException e) {
@@ -278,7 +279,8 @@ public class AuthorityService {
 			}
 			logger.error(e.getMessage()+"\n"+stringBuffer.toString());
 			try {
-				response.sendError(response.SC_BAD_REQUEST, e.getMessage());
+				response.setStatus(400);
+				response.getWriter().write(e.getMessage());	
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
@@ -294,18 +296,18 @@ public class AuthorityService {
 	 */
 	@RequestMapping(value = "/disagreeApplyModel/{token}",method = RequestMethod.POST)
 	public void disagreeApplyModel(HttpServletResponse response,@PathVariable("token") String token,@RequestBody ApplyTable applyTable) {
-		System.out.println("拒绝项目权限");
+		
 		response.setContentType("application/json;charset=utf-8");
 		try {
 			String temp =userSessionManager.disagreeApplyModel(token,applyTable);
 			if (temp.equals("201")){
 				response.getWriter().write("{\"status\":\"success\"}");
 			}else if (temp.equals("401")){
-				response.sendError(response.SC_FORBIDDEN, "User is Unauthorized");
+				throw new AuthenticationException("用户权限不足");
 			}else if (temp.equals("404")){
-				response.sendError(response.SC_NOT_FOUND, "User is offline");
+				throw new AuthenticationException("用户未登录或者token已经失效");
 			}else{
-				response.sendError(response.SC_INTERNAL_SERVER_ERROR, "SC_INTERNAL_SERVER_ERROR");
+				throw new RuntimeException( "服务器内部错误");
 			}
 		} catch (KeyManagementException | NoSuchAlgorithmException
 				 | IOException | HttpException e) {
@@ -315,7 +317,8 @@ public class AuthorityService {
 			}
 			logger.error(e.getMessage()+"\n"+stringBuffer.toString());
 			try {
-				response.sendError(response.SC_BAD_REQUEST, e.getMessage());
+				response.setStatus(400);
+				response.getWriter().write(e.getMessage());	
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
@@ -335,20 +338,20 @@ public class AuthorityService {
 	 */
 	@RequestMapping(value = "/deleteUserProject/{token}/{userID}/{projectID}/{roleName}",method = RequestMethod.DELETE)
 	public void deleteUserProject(HttpServletResponse response,@PathVariable("token") String token,@PathVariable("userID") String userID,@PathVariable("projectID") String projectID,@PathVariable("roleName") String roleName) {
-		System.out.println("删除项目权限");
+		
 		response.setContentType("application/json;charset=utf-8");
 		try {
 			String temp =userSessionManager.deleteUserProject(token, userID, projectID, roleName);
 			if (temp.equals("201")){
 				response.getWriter().write("{\"status\":\"success\"}");
 			}else if (temp.equals("401")){
-				response.sendError(response.SC_FORBIDDEN, "User is Unauthorized");
+				throw new AuthenticationException("用户权限不足");
 			}else if (temp.equals("404")){
-				response.sendError(response.SC_NOT_FOUND, "User is offline");
+				throw new AuthenticationException("用户未登录或者token已经失效");
 			}else if (temp.equals("406")){
-				response.sendError(response.SC_NOT_FOUND, "no role name is "+roleName);
+				throw new RuntimeException( "没有角色 "+roleName);
 			}else{
-				response.sendError(response.SC_BAD_REQUEST, "Internal error");
+				throw new RuntimeException( "服务器内部错误");
 			}
 		} catch (KeyManagementException | NoSuchAlgorithmException
 				 | IOException | HttpException e) {
@@ -358,7 +361,8 @@ public class AuthorityService {
 			}
 			logger.error(e.getMessage()+"\n"+stringBuffer.toString());
 			try {
-				response.sendError(response.SC_BAD_REQUEST, e.getMessage());
+				response.setStatus(400);
+				response.getWriter().write(e.getMessage());	
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
@@ -387,13 +391,13 @@ public class AuthorityService {
 			if (temp.equals("201")){
 				response.getWriter().write("{\"status\":\"success\"}");
 			}else if (temp.equals("401")){
-				response.sendError(response.SC_FORBIDDEN, "User is Unauthorized");
+				throw new AuthenticationException( "用户权限不足");
 			}else if (temp.equals("404")){
-				response.sendError(response.SC_NOT_FOUND, "User is offline");
+				throw new AuthenticationException("用户未登录或者token已经失效");
 			}else if (temp.equals("406")){
-				response.sendError(response.SC_NOT_FOUND, "no role name is "+roleName);
+				throw new RuntimeException( "没有角色 "+roleName);
 			}else{
-				response.sendError(response.SC_BAD_REQUEST, "Internal error");
+				throw new RuntimeException( "服务器内部错误");
 			}
 		} catch (KeyManagementException | NoSuchAlgorithmException
 				 | IOException | HttpException e) {
@@ -403,7 +407,8 @@ public class AuthorityService {
 			}
 			logger.error(e.getMessage()+"\n"+stringBuffer.toString());
 			try {
-				response.sendError(response.SC_BAD_REQUEST, e.getMessage());
+				response.setStatus(400);
+				response.getWriter().write(e.getMessage());	
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
@@ -425,13 +430,13 @@ public class AuthorityService {
 			if (temp.equals("201")){
 				response.getWriter().write("{\"status\":\"success\"}");
 			}else if (temp.equals("401")){
-				response.sendError(response.SC_FORBIDDEN, "User is Unauthorized");
+				throw new AuthenticationException("用户权限不足");
 			}else if (temp.equals("404")){
-				response.sendError(response.SC_NOT_FOUND, "User is offline");
+				throw new AuthenticationException("用户未登录或者token已经失效");
 			}else if (temp.equals("406")){
-				response.sendError(response.SC_NOT_FOUND, "no role name is "+roleName);
+				throw new RuntimeException( "没有角色 "+roleName);
 			}else{
-				response.sendError(response.SC_BAD_REQUEST, "Internal error");
+				throw new RuntimeException(  "服务器内部错误");
 			}
 		} catch (KeyManagementException | NoSuchAlgorithmException
 				 | IOException | HttpException e) {
@@ -441,7 +446,8 @@ public class AuthorityService {
 			}
 			logger.error(e.getMessage()+"\n"+stringBuffer.toString());
 			try {
-				response.sendError(response.SC_BAD_REQUEST, e.getMessage());
+				response.setStatus(400);
+				response.getWriter().write(e.getMessage());	
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
@@ -464,7 +470,7 @@ public class AuthorityService {
 //			}else if (temp.equals("404")){
 //				response.sendError(response.SC_NOT_FOUND, "User is offline");
 //			}else{
-//				response.sendError(response.SC_BAD_REQUEST, "Internal error");
+//				response.sendError(response.SC_BAD_REQUEST, "服务器内部错误");
 //			}
 //		} catch (KeyManagementException | NoSuchAlgorithmException
 //				 | IOException | HttpException e) {
@@ -483,7 +489,6 @@ public class AuthorityService {
 	 */
 	@RequestMapping(value = "/launchApprove/{token}",method = RequestMethod.GET)
 	public void launchApprove(HttpServletResponse response,@PathVariable("token") String token) {
-		System.out.println("申请成为developer");
 		response.setContentType("application/json;charset=utf-8");
 			try {
 				GregorianCalendar gc = new GregorianCalendar();
@@ -504,10 +509,10 @@ public class AuthorityService {
 							if (approveDAO.save(approve)) {
 								response.getWriter().write("{\"status\":\"success\"}");
 							}else{
-								response.sendError(response.SC_INTERNAL_SERVER_ERROR, "Internal error");
+								throw new RuntimeException( "服务器内部错误");
 							}
 						}else{
-							response.sendError(response.SC_BAD_REQUEST, "User is already a developer");
+							throw new RuntimeException( "用户已经是developer");
 						}
 					}else{
 						if(ad.getStatus()==1){
@@ -516,19 +521,19 @@ public class AuthorityService {
 								if (approveDAO.save(approve)) {
 									response.getWriter().write("{\"status\":\"success\"}");
 								}else{
-									response.sendError(response.SC_INTERNAL_SERVER_ERROR, "Internal error");
+									throw new RuntimeException( "服务器内部错误");
 								}
 							}else{
-								response.sendError(response.SC_BAD_REQUEST, "User is already a developer");
+								throw new RuntimeException( "用户已经是developer");
 							}	
 						}else{
-							response.sendError(response.SC_CONFLICT, "user has applied");
+							throw new RuntimeException( "该用户已经申请过了");
 						}
 						
 						
 					}
 				}else{
-					response.sendError(response.SC_NOT_FOUND, "User is offline");
+					throw new AuthenticationException("用户未登录或者token已经失效");
 				}
 			} catch (IOException e) {
 				StringBuffer stringBuffer = new StringBuffer();
@@ -537,7 +542,8 @@ public class AuthorityService {
 				}
 				logger.error(e.getMessage()+"\n"+stringBuffer.toString());
 				try {
-					response.sendError(response.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+					response.setStatus(400);
+					response.getWriter().write(e.getMessage());	
 					} catch (IOException e1) {
 					e1.printStackTrace();
 				}

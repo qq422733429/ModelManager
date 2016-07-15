@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
@@ -16,6 +17,9 @@ import java.security.NoSuchAlgorithmException;
 import javax.naming.NamingException;
 import javax.servlet.http.HttpServletResponse;
 
+import net.sf.json.JSON;
+
+import org.apache.commons.httpclient.auth.AuthenticationException;
 import org.apache.commons.lang.text.StrBuilder;
 import org.apache.http.HttpException;
 import org.apache.http.HttpResponse;
@@ -57,7 +61,6 @@ public class ModelService {
 	public void setModelManager(ModelManager modelManager) {
 		this.modelManager = modelManager;
 	}
-
 	/**
 	 * 该接口用于创建模型，输入参数由Model类给出，model创建成功返回模型相关数据，创建项目必须是developer权限，模型创建成功status为0
 	 * @param response
@@ -72,14 +75,11 @@ public class ModelService {
 		try {
 			Model temp =modelManager.createModel(token, requestModel);
 			if (temp.getModelDescription().equals("500")){
-				response.sendError(response.SC_BAD_REQUEST, "Internal error");
-				return null;
+				throw new RuntimeException("服务器内部错误");
 			}else if (temp.getModelDescription().equals("401")){
-				response.sendError(response.SC_FORBIDDEN, "User is Unauthorized");
-				return null;
+				throw new AuthenticationException("用户权限不足");
 			}else if (temp.getModelDescription().equals("404")){
-				response.sendError(response.SC_NOT_FOUND, "User is offline");
-				return null;
+				throw new AuthenticationException("用户未登录或者token已失效");
 			}else{
 				return temp;
 			}
@@ -91,7 +91,8 @@ public class ModelService {
 			}
 			logger.error(e.getMessage()+"\n"+stringBuffer.toString());
 			try {
-				response.sendError(response.SC_BAD_REQUEST, e.getMessage());
+				response.setStatus(400);
+				response.getWriter().write(e.getMessage());	
 				return null;
 			} catch (IOException e1) {
 				e1.printStackTrace();
@@ -115,13 +116,13 @@ public class ModelService {
 		try {
 			BaseModel temp =modelManager.createBaseModel(token, requestModel);
 			if (temp.getModelDescription().equals("500")){
-				response.sendError(response.SC_BAD_REQUEST, "Internal error");
+				response.sendError(response.SC_BAD_REQUEST, "服务器内部错误");
 				return null;
 			}else if (temp.getModelDescription().equals("401")){
-				response.sendError(response.SC_FORBIDDEN, "User is Unauthorized");
+				response.sendError(response.SC_FORBIDDEN, "用户权限不足");
 				return null;
 			}else if (temp.getModelDescription().equals("404")){
-				response.sendError(response.SC_NOT_FOUND, "User is offline");
+				response.sendError(response.SC_NOT_FOUND, "用户未登录或者token已失效");
 				return null;
 			}else{
 				return temp;
@@ -134,7 +135,8 @@ public class ModelService {
 			}
 			logger.error(e.getMessage()+"\n"+stringBuffer.toString());
 			try {
-				response.sendError(response.SC_BAD_REQUEST, e.getMessage());
+				response.setStatus(400);
+				response.getWriter().write(e.getMessage());	
 				return null;
 			} catch (IOException e1) {
 				e1.printStackTrace();
@@ -159,28 +161,27 @@ public class ModelService {
 				case 200:
 					response.getWriter().write("{\"status\":\"success\"}");
 					break;
-				case 500:
-					response.sendError(response.SC_INTERNAL_SERVER_ERROR, "Internal error");
-					break;
 				case 400:
-					response.sendError(response.SC_BAD_REQUEST, "model is not prepered or modelid is worry");
-					break;
+					throw new RuntimeException("模型上传失败或者未编译完成或已经发布");
+				
 				case 403:
-					response.sendError(response.SC_UNAUTHORIZED, "token is not admin");
-					break;
+					throw new AuthenticationException("用户权限不足");
+				
 				case 404:
-					response.sendError(response.SC_NOT_FOUND, "token is not found");
-					break;
+					throw new AuthenticationException("用户未登录或者token已失效");
+				default :
+					throw new RuntimeException("服务器内部错误");
 				
 			}
-		} catch ( IOException e) {
+		} catch ( Exception e) {
 			StringBuffer stringBuffer = new StringBuffer();
 			for (StackTraceElement element : e.getStackTrace()) {
 				stringBuffer.append("\t"+element+"\n");
 			}
 			logger.error(e.getMessage()+"\n"+stringBuffer.toString());
 			try {
-				response.sendError(response.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+				response.setStatus(400);
+				response.getWriter().write(e.getMessage());	
 				
 			} catch (IOException e1) {
 				e1.printStackTrace();
@@ -205,14 +206,14 @@ public class ModelService {
 		try {
 			Model temp =modelManager.UploadModel(token, requestModel);
 			if (temp.getModelDescription().equals("500")){
-				response.sendError(response.SC_BAD_REQUEST, "Internal error");
-				return null;
+				throw new RuntimeException("服务器内部错误");
+				
 			}else if (temp.getModelDescription().equals("401")){
-				response.sendError(response.SC_FORBIDDEN, "User is Unauthorized");
-				return null;
+				throw new AuthenticationException("用户权限不足");
+				
 			}else if (temp.getModelDescription().equals("404")){
-				response.sendError(response.SC_NOT_FOUND, "User is offline");
-				return null;
+				throw new AuthenticationException("用户未登录或者token已失效");
+				
 			}else{
 				return temp;
 			}
@@ -224,8 +225,9 @@ public class ModelService {
 			}
 			logger.error(e.getMessage()+"\n"+stringBuffer.toString());
 			
-				response.sendError(response.SC_BAD_REQUEST, e.getMessage());
-				return null;
+			response.setStatus(400);
+			response.getWriter().write(e.getMessage());	
+			return null;
 			
 		}
 	}
@@ -241,6 +243,7 @@ public class ModelService {
 	 */
 	 @RequestMapping(value = "/filesUpload/{token}/{projectId}",method = RequestMethod.POST)
 	 public void filesUpload(HttpServletResponse response,@PathVariable("token") String token,@PathVariable("projectId") String projectId,@RequestParam("myfiles") MultipartFile[] file) {
+		 response.setContentType("application/json;charset=utf-8");
 		 logger.info("用户开始上传kjb、jar、xml、hql");
 			try {
 				String result = modelManager.copyToDir(token, projectId, file);
@@ -249,14 +252,15 @@ public class ModelService {
 					response.getWriter().write("{\"status\":\"success\"}");
 					break;
 				case "401":
-					response.sendError(response.SC_FORBIDDEN, "User is Unauthorized");
-					break;
+					throw new AuthenticationException("用户权限不足");
+				
 				case "404":
-					response.sendError(response.SC_NOT_FOUND, "User is offline");
-					break;
+					throw new AuthenticationException("用户未登录或者token已失效");
+					
 				default:
-					response.sendError(response.SC_BAD_REQUEST, "upload file fail");
+					response.getWriter().write("{\"jobid\":\""+result+"\"}");
 					break;
+				
 				}
 			} catch (KeyManagementException | NoSuchAlgorithmException
 					| IOException | HttpException | DocumentException
@@ -267,7 +271,8 @@ public class ModelService {
 				}
 				logger.error(e.getMessage()+"\n"+stringBuffer.toString());
 				try {
-					response.sendError(response.SC_BAD_REQUEST, e.getMessage());
+					response.setStatus(400);
+					response.getWriter().write(e.getMessage());	
 				} catch (IOException e1) {
 					e1.printStackTrace();
 				}
@@ -282,6 +287,7 @@ public class ModelService {
 	 @RequestMapping(value = "/findSubModelPath",method = RequestMethod.POST)
 	 public @ResponseBody FindModelList findSubModelPath(HttpServletResponse response,@RequestBody FindModelList request) {
 		try {
+			response.setContentType("application/json;charset=utf-8");
 			return  modelManager.findModelList(request);
 		}catch (Exception e) {
 			StringBuffer stringBuffer = new StringBuffer();
@@ -290,7 +296,8 @@ public class ModelService {
 			}
 			logger.error(e.getMessage()+"\n"+stringBuffer.toString());
 			try {
-				response.sendError(response.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+				response.setStatus(400);
+				response.getWriter().write(e.getMessage());	
 				return null;
 			} catch (IOException e1) {
 				e1.printStackTrace();
@@ -308,14 +315,14 @@ public class ModelService {
 	 @RequestMapping(value = "/outputAndInputDir",method = RequestMethod.POST)
 	 public void outputAndInputDir(HttpServletResponse response,@RequestBody Model request) {
 		 try {
+			 response.setContentType("application/json;charset=utf-8");
 			switch (modelManager.getOutput(request)) {
 			case 201:
 				response.getWriter().write("{\"status\":\"success\"}");
 				break;
 
 			default:
-				response.sendError(response.SC_BAD_REQUEST, "unknown error");
-				break;
+				throw new RuntimeException("服务器内部错误");
 			};
 		}catch (Exception e) {
 			StringBuffer stringBuffer = new StringBuffer();
@@ -324,7 +331,8 @@ public class ModelService {
 			}
 			logger.error(e.getMessage()+"\n"+stringBuffer.toString());
 			try {
-				response.sendError(response.SC_INTERNAL_SERVER_ERROR, "there is modelid is "+request.getModelId());
+				response.setStatus(400);
+				response.getWriter().write(e.getMessage());	
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
@@ -340,26 +348,20 @@ public class ModelService {
 	 @RequestMapping(value = "/publicModel/{token}",method = RequestMethod.POST)
 	 public void publicModel(HttpServletResponse response,@PathVariable("token") String token,@RequestBody PublicModel request) {
 		 try {
+			 response.setContentType("application/json;charset=utf-8");
 			switch (modelManager.publicModel(token, request)) {
 			case 201:
 				response.getWriter().write("{\"status\":\"success\"}");
 				break;
 			case 400:
-				response.sendError(response.SC_BAD_REQUEST, "the model has publiced");
-				break;
+				throw new AuthenticationException("模型已经发布");
 			case 401:
-				response.sendError(response.SC_NOT_FOUND,"the user is offline");
-				break;
+				throw new AuthenticationException("用户未登录或者token已失效");
 			case 403:
-				response.sendError(response.SC_FORBIDDEN, "the user does not have this model");
-				break;
-			case 500:
-				response.sendError(response.SC_INTERNAL_SERVER_ERROR,"INTERNAL_SERVER_ERROR");
-				break;
-
+				throw new AuthenticationException("用户权限不足");
 			default:
-				response.sendError(response.SC_BAD_REQUEST, "unknown error");
-				break;
+				throw new RuntimeException("服务器内部错误");
+		
 			};
 		}catch (Exception e) {
 			StringBuffer stringBuffer = new StringBuffer();
@@ -368,7 +370,8 @@ public class ModelService {
 			}
 			logger.error(e.getMessage()+"\n"+stringBuffer.toString());
 			try {
-				response.sendError(response.SC_INTERNAL_SERVER_ERROR, "unknown error");
+				response.setStatus(400);
+				response.getWriter().write(e.getMessage());	
 			} catch (IOException e1) {
 				e1.printStackTrace();
 				
@@ -384,11 +387,14 @@ public class ModelService {
 	  * @param response
 	  * @param token
 	  * @param modelId
+	 * @throws IOException 
 	  */
 	 @RequestMapping(value = "/downPhotoById/{token}/{modelId}")  
-	 public void downPhotoByStudentId(HttpServletResponse response,@PathVariable("token") String token,@PathVariable("modelId") String modelId){  
+	 public void downkjb(HttpServletResponse response,@PathVariable("token") String token,@PathVariable("modelId") String modelId) throws IOException{  
+		 response.setContentType("application/json;charset=utf-8");
 		 OutputStream outputStream=null;
 	     FileInputStream fis=null;
+	     
 		 try {
 			File file  = modelManager.findFileByModelId(token, modelId);
 			fis = new FileInputStream(file);  
@@ -409,21 +415,19 @@ public class ModelService {
 	           }
 			 bos.writeTo(outputStream);
 			 outputStream.flush();
-			 logger.info("用户"+token+"下载模型"+modelId+"的kjb成功！");
+			 logger.info("用户"+token+"下载模型"+modelId+"的kjb("+fileName+")成功！");
+			 fis.close();
+			 outputStream.close();
 		} catch (IOException e) {
 			StringBuffer stringBuffer = new StringBuffer();
 			for (StackTraceElement element : e.getStackTrace()) {
 				stringBuffer.append("\t"+element+"\n");
 			}
 			logger.error(e.getMessage()+"\n"+stringBuffer.toString());
-		}  finally{
-	     try {
-	    	fis.close();
-			outputStream.close();
-		} catch (IOException e) {
-			e.printStackTrace();
+			response.setStatus(400);
+			response.getWriter().write(e.getMessage());	
 		}  
-		}
+		
 	 } 
 	 /**
 	  * 用户获得查看获得输出文件共分为两步
@@ -446,7 +450,7 @@ public class ModelService {
 					return sa;
 				}else{
 					logger.info("token"+token+"获取模型"+modelId+"的输出目录失败");
-					return null;
+					throw new HttpException("未找到该模型输出目录");
 				}
 			}catch (Exception e) {
 				StringBuffer stringBuffer = new StringBuffer();
@@ -455,7 +459,8 @@ public class ModelService {
 				}
 				logger.error(e.getMessage()+"\n"+stringBuffer.toString());
 				try {
-					response.sendError(response.SC_NOT_FOUND, "there is no output file!");
+					response.setStatus(400);
+					response.getWriter().write(e.getMessage());	
 					return null;
 				} catch (IOException e1) {
 					e1.printStackTrace();
@@ -471,10 +476,11 @@ public class ModelService {
 	  * @param response
 	  * @param token
 	  * @param model
+	 * @throws IOException 
 	  */
 	 @RequestMapping(value = "/getOutputFileOfModel/{token}",method = RequestMethod.POST)  
-	 public void getOutputFileOfModel(HttpServletResponse response,@PathVariable("token") String token,@RequestBody Model model){  
-		 
+	 public void getOutputFileOfModel(HttpServletResponse response,@PathVariable("token") String token,@RequestBody Model model) throws IOException{  
+		 response.setContentType("application/json;charset=utf-8");
 		 OutputStream outputStream=null;
 	     InputStream fis=null;
 	     ByteArrayOutputStream bos=null;
@@ -484,7 +490,7 @@ public class ModelService {
 			 if(responseFile!=null){
 				fis = responseFile.getEntity().getContent(); 
 				long lenth= responseFile.getEntity().getContentLength();
-				EntityUtils.consume(responseFile.getEntity());
+				
 				bos = new ByteArrayOutputStream(1000);  
 			    byte[] b = new byte[1000];  
 			    int n;  
@@ -500,8 +506,10 @@ public class ModelService {
 			       }
 				 bos.writeTo(outputStream);
 				 outputStream.flush();
+				 EntityUtils.consume(responseFile.getEntity());
 				 logger.info("token"+token+"获取模型"+model.getModelId()+"的输出文件"+model.getOutputDir()+"成功");
-			 }
+			 }else
+				 throw new HttpException("未找到指定输出文件");
 		} catch (KeyManagementException | NoSuchAlgorithmException
 				| UnsupportedOperationException
 				| IOException | HttpException e) {
@@ -509,6 +517,8 @@ public class ModelService {
 			for (StackTraceElement element : e.getStackTrace()) {
 				stringBuffer.append("\t"+element+"\n");
 			}
+			response.setStatus(400);
+			response.getWriter().write(e.getMessage());	
 			logger.error(e.getMessage()+"\n"+stringBuffer.toString());
 		}finally{
 			try {
@@ -522,10 +532,16 @@ public class ModelService {
 		
 	 } 
 	 
-	
+	/**
+	 * 添加模型类型，必须要admin才能添加
+	 * @param response
+	 * @param token
+	 * @param modelType
+	 * @return
+	 */
 	 @RequestMapping(value = "/addModelType/{token}",method = RequestMethod.POST)  
 	 public @ResponseBody ModelType addModelType(HttpServletResponse response,@PathVariable("token") String token,@RequestBody ModelType modelType){  
-		 
+		 response.setContentType("application/json;charset=utf-8");
 	   try {
 		   return modelManager.addModelType(token, modelType);
 	   } catch (Exception e) {
@@ -535,7 +551,8 @@ public class ModelService {
 			}
 			logger.error(e.getMessage()+"\n"+stringBuffer.toString());
 			try {
-				response.sendError(response.SC_BAD_REQUEST, e.getMessage()+stringBuffer.toString());
+				response.setStatus(400);
+				response.getWriter().write(e.getMessage());	
 				return null;
 			} catch (IOException e1) {
 				e1.printStackTrace();
@@ -544,10 +561,16 @@ public class ModelService {
 		}
 	 }
 	   
-	   
+	   /**
+	    * 模型拥有者更新模型的类型
+	    * @param response
+	    * @param token
+	    * @param modelType
+	    * @return
+	    */
 	   @RequestMapping(value = "/updateModelType/{token}",method = RequestMethod.POST)  
 		 public @ResponseBody ModelType updateModelType(HttpServletResponse response,@PathVariable("token") String token,@RequestBody ModelType modelType){  
-			 
+		   response.setContentType("application/json;charset=utf-8");
 		   try {
 			   return modelManager.updateModelType(token, modelType);
 		   } catch (Exception e) {
@@ -557,7 +580,8 @@ public class ModelService {
 				}
 				logger.error(e.getMessage()+"\n"+stringBuffer.toString());
 				try {
-					response.sendError(response.SC_BAD_REQUEST, e.getMessage()+stringBuffer.toString());
+					response.setStatus(400);
+					response.getWriter().write(e.getMessage());	
 					return null;
 				} catch (IOException e1) {
 					e1.printStackTrace();
@@ -568,6 +592,65 @@ public class ModelService {
 		
 		
 	 }
-	 
+	   /**
+	    * 获取指定模型状态
+	    * @param response
+	    * @param token
+	    * @param modelId
+	    */
+	   @RequestMapping(value = "/getModelStatus/{token}/{modelId}",method = RequestMethod.GET)  
+		 public void getModelStatus(HttpServletResponse response,@PathVariable("token") String token,@PathVariable("modelId") String modelId){  
+		   response.setContentType("application/json;charset=utf-8");
+		   try {
+			   int temp = modelManager.getModelStatus(token,modelId);
+			   response.getWriter().write("{\"status\":\"success\",\"modelStatus\":\""+temp+"\"}");
+						
+		   } catch (Exception e) {
+				StringBuffer stringBuffer = new StringBuffer();
+				for (StackTraceElement element : e.getStackTrace()) {
+					stringBuffer.append("\t"+element+"\n");
+				}
+				logger.error(e.getMessage()+"\n"+stringBuffer.toString());
+				try {
+					response.setStatus(400);
+					response.getWriter().write(e.getMessage());	
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+			}
+			
+		
+		
+	 }
+	   /**
+	    * 获取指定模型的命名参数
+	    * @param response
+	    * @param token
+	    * @param modelId
+	    */
+	   @RequestMapping(value = "/getModelNameArg/{token}/{modelId}",method = RequestMethod.GET)  
+		 public void getModelNameArg(HttpServletResponse response,@PathVariable("token") String token,@PathVariable("modelId") String modelId){  
+		   response.setContentType("application/json;charset=utf-8");                                 
+		   try {
+			   String aa = modelManager.getModelNameArg(token, modelId);
+			   response.getWriter().write(aa);
+						
+		   } catch (Exception e) {
+				StringBuffer stringBuffer = new StringBuffer();
+				for (StackTraceElement element : e.getStackTrace()) {
+					stringBuffer.append("\t"+element+"\n");
+				}
+				logger.error(e.getMessage()+"\n"+stringBuffer.toString());
+				try {
+					response.setStatus(400);
+					response.getWriter().write(e.getMessage());	
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+			}
+			
+		
+		
+	 }
 	 
 }
